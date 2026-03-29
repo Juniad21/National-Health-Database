@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
-            $table->enum('record_type', ['prescription', 'lab_report', 'discharge_summary', 'vaccination']);
+            $table->enum('record_type', ['prescription', 'lab', 'document', 'vaccination']);
             $table->string('diagnosis')->nullable();
             $table->text('medications_or_results')->nullable();
             $table->string('document_path')->nullable();

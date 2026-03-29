@@ -11,47 +11,73 @@ use App\Models\MedicalRecord;
 use App\Models\PatientConsent;
 use App\Models\HealthMetric;
 use App\Models\BloodRequest;
+use App\Models\AccessRequest;
+use App\Models\Vaccination;
+use App\Models\Emergency;
+use App\Models\DoctorEvaluation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PatientDashboardController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Helper to safely retrieve the patient profile or abort with a redirect.
+     */
+    private function getPatientProfile()
     {
         $user = Auth::user();
-        if ($user->role !== 'patient')
-            abort(403);
+        
+        // If they are not a patient, send them to their role dashboard
+        if ($user->role !== 'patient') {
+            abort(redirect()->route($user->role . '.dashboard')->send());
+        }
 
         $patient = $user->patient;
+        
+        // Ensure patient profile exists
+        if (!$patient) {
+            abort(redirect()->route('dashboard')->with('error', 'No patient profile found. Please contact administration.')->send());
+        }
+
+        return $patient;
+    }
+
+    public function index(Request $request)
+    {
+        $patient = $this->getPatientProfile();
+        $user = Auth::user();
 
         // Fetch Data for the Dashboard Views (HealthMetrics still keyed to user.id based on old schema)
         $healthMetrics = HealthMetric::where('patient_id', $user->id)->orderBy('recorded_date', 'desc')->take(5)->get();
 
         // Fetch matching BloodRequests if the patient has a blood group
         $urgentBloodRequests = [];
-        if ($patient && $patient->blood_group) {
+        if ($patient->blood_group) {
             $urgentBloodRequests = BloodRequest::with('hospital')
                 ->where('blood_group_needed', $patient->blood_group)
                 ->where('status', 'active')
                 ->get();
         }
 
+        // Fetch Vaccinations
+        $vaccinations = Vaccination::where('patient_id', $patient->id)->orderBy('due_date', 'asc')->get();
+
         // Return a combined dashboard view (could optionally split into multiple views later)
-        return view('patient.dashboard', compact('patient', 'user', 'healthMetrics', 'urgentBloodRequests'));
+        return view('patient.dashboard', compact('patient', 'user', 'healthMetrics', 'urgentBloodRequests', 'vaccinations'));
     }
 
     // Feature 1: Appointment Scheduling & Search
     public function scheduling(Request $request)
     {
+        $patient = $this->getPatientProfile();
+
         // Fetch all doctors with their hospital to allow client-side filtering via Alpine.js
         $doctors = Doctor::with(['user', 'hospital'])->get();
         // Fetch hospitals
         $hospitals = Hospital::with('user')->get();
 
-        $patientId = Auth::user()->patient->id;
-
         $appointments = Appointment::with(['doctor.user', 'hospital'])
-            ->where('patient_id', $patientId)
+            ->where('patient_id', $patient->id)
             ->orderBy('date', 'asc')
             ->get();
 
@@ -60,6 +86,8 @@ class PatientDashboardController extends Controller
 
     public function storeAppointment(Request $request)
     {
+        $patient = $this->getPatientProfile();
+
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
             'hospital_id' => 'required|exists:hospitals,id',
@@ -79,7 +107,7 @@ class PatientDashboardController extends Controller
         }
 
         Appointment::create([
-            'patient_id' => Auth::user()->patient->id,
+            'patient_id' => $patient->id,
             'doctor_id' => $request->doctor_id,
             'hospital_id' => $request->hospital_id,
             'date' => $request->appointment_date,
@@ -93,10 +121,10 @@ class PatientDashboardController extends Controller
     // Feature 2: Medical Records & Prescriptions
     public function medicalRecords()
     {
-        $patientId = Auth::user()->patient->id;
+        $patient = $this->getPatientProfile();
 
         $records = MedicalRecord::with('doctor.user')
-            ->where('patient_id', $patientId)
+            ->where('patient_id', $patient->id)
             ->orderBy('date', 'desc')
             ->get()
             ->groupBy('record_type');
@@ -104,23 +132,28 @@ class PatientDashboardController extends Controller
         return view('patient.medical_records', compact('records'));
     }
 
-    // Feature 3: Consent & Access Control
+    // Feature 1: Consent & Access Control
     public function consents()
     {
-        $doctors = Doctor::with('user')->get();
-        // Consents table still keyed to users(id) based on old schema unless migrated too
-        $consents = PatientConsent::where('patient_id', Auth::id())->get()->keyBy('doctor_id');
+        $patient = $this->getPatientProfile();
+        $accessRequests = AccessRequest::with('doctor.user')
+            ->where('patient_id', $patient->id)
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
-        return view('patient.consents', compact('doctors', 'consents'));
+        return view('patient.consents', compact('accessRequests'));
     }
 
     public function updateConsent(Request $request)
     {
+        $patient = $this->getPatientProfile();
+        
         $request->validate([
             'doctor_id' => 'required|exists:users,id', // or doctors,id depending on patient_consents table
             'status' => 'required|in:granted,revoked',
         ]);
 
+        // Using Auth::id() or patient id depending on model schema. Assuming the intent was user id or patient id.
         PatientConsent::updateOrCreate(
             ['patient_id' => Auth::id(), 'doctor_id' => $request->doctor_id],
             ['status' => $request->status]
@@ -132,6 +165,9 @@ class PatientDashboardController extends Controller
     // Feature 5: Symptom Assessment Tool
     public function symptomAssessment(Request $request)
     {
+        // Require patient profile
+        $this->getPatientProfile();
+
         $suggestion = null;
         if ($request->isMethod('post')) {
             $symptoms = strtolower($request->input('symptoms'));
@@ -177,5 +213,83 @@ class PatientDashboardController extends Controller
         }
 
         return view('patient.symptoms', compact('suggestion'));
+    }
+
+    // Feature 1: Patient Consent & Data Access Control
+    public function approveAccessRequest(Request $request, $id)
+    {
+        $patient = $this->getPatientProfile();
+        $accessRequest = AccessRequest::findOrFail($id);
+
+        if ($accessRequest->patient_id !== $patient->id)
+            abort(403);
+
+        $accessRequest->update(['status' => 'approved']);
+        return back()->with('success', 'Access Request Approved.');
+    }
+
+    public function rejectAccessRequest(Request $request, $id)
+    {
+        $patient = $this->getPatientProfile();
+        $accessRequest = AccessRequest::findOrFail($id);
+
+        if ($accessRequest->patient_id !== $patient->id)
+            abort(403);
+
+        $accessRequest->update(['status' => 'revoked']);
+        return back()->with('success', 'Access Request Rejected.');
+    }
+
+    // Feature 4: Vaccination & Immunization Tracker
+    public function markVaccineTaken(Request $request, $id)
+    {
+        $patient = $this->getPatientProfile();
+        $vaccine = Vaccination::findOrFail($id);
+
+        if ($vaccine->patient_id !== $patient->id)
+            abort(403);
+
+        $vaccine->update(['status' => 'taken']);
+        return back()->with('success', 'Vaccine marked as taken.');
+    }
+
+    // Feature 7: Emergency Alert
+    public function triggerEmergency(Request $request)
+    {
+        $patient = $this->getPatientProfile();
+
+        Emergency::create([
+            'patient_id' => $patient->id,
+            'status' => 'active'
+        ]);
+
+        return back()->with('success', 'SOS Alert sent to nearby hospitals.');
+    }
+
+    // Feature 8: Doctor Performance Evaluation
+    public function storeEvaluation(Request $request)
+    {
+        $patient = $this->getPatientProfile();
+
+        $request->validate([
+            'appointment_id' => 'required|exists:appointments,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'feedback_text' => 'nullable|string'
+        ]);
+
+        $appointment = Appointment::findOrFail($request->appointment_id);
+
+        if ($appointment->patient_id !== $patient->id)
+            abort(403);
+
+        DoctorEvaluation::create([
+            'appointment_id' => $appointment->id,
+            'doctor_id' => $appointment->doctor_id,
+            'patient_id' => $patient->id,
+            'rating_1_to_5' => $request->rating,
+            'feedback_text' => $request->feedback_text
+        ]);
+
+        return back()->with('success', 'Thank you for rating your visit!');
     }
 }

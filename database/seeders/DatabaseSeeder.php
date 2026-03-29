@@ -9,6 +9,11 @@ use App\Models\Doctor;
 use App\Models\Hospital;
 use App\Models\Appointment;
 use App\Models\MedicalRecord;
+use App\Models\LabTestCatalog;
+use App\Models\LabOrder;
+use App\Models\Vaccination;
+use App\Models\HospitalResource;
+use App\Models\DoctorEvaluation;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -28,6 +33,23 @@ class DatabaseSeeder extends Seeder
         }
         $validNids = ValidNid::pluck('nid_number')->toArray();
         $nidIndex = 0;
+
+        // 1.5 Seed Lab Test Catalog
+        $labTests = [
+            ['test_name' => 'Complete Blood Count (CBC)', 'description' => 'Measures red & white blood cells, and platelets.'],
+            ['test_name' => 'Lipid Panel', 'description' => 'Measures cholesterol and triglyceride levels.'],
+            ['test_name' => 'Fasting Blood Sugar (FBS)', 'description' => 'Tests for diabetes and prediabetes.'],
+            ['test_name' => 'Liver Function Test (LFT)', 'description' => 'Checks liver health and enzymes.'],
+            ['test_name' => 'Kidney Function Test (KFT)', 'description' => 'Measures urea, creatinine, and electrolytes.'],
+            ['test_name' => 'Thyroid Profile (T3, T4, TSH)', 'description' => 'Measures thyroid gland function.'],
+            ['test_name' => 'Urine Routine', 'description' => 'Macroscopic and microscopic analysis of urine.'],
+            ['test_name' => 'Chest X-Ray', 'description' => 'Radiographic image of the chest and lungs.'],
+            ['test_name' => 'ECG (Electrocardiogram)', 'description' => 'Records the electrical signal from the heart.'],
+            ['test_name' => 'Dengue NS1 Antigen', 'description' => 'Rapid test for early detection of dengue virus.']
+        ];
+        foreach ($labTests as $test) {
+            LabTestCatalog::create($test);
+        }
 
         // 2. Create 5 Hospitals (Predictable Emails)
         $hospitalData = [
@@ -55,8 +77,17 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        // 2.5 Seed Hospital Resources
+        foreach ($hospitals as $hospital) {
+            HospitalResource::create(['hospital_id' => $hospital->id, 'resource_type' => 'General Bed', 'total_capacity' => 100, 'currently_in_use' => random_int(50, 95)]);
+            HospitalResource::create(['hospital_id' => $hospital->id, 'resource_type' => 'ICU Unit', 'total_capacity' => 20, 'currently_in_use' => random_int(10, 19)]);
+            HospitalResource::create(['hospital_id' => $hospital->id, 'resource_type' => 'Ventilator', 'total_capacity' => 10, 'currently_in_use' => random_int(2, 8)]);
+            HospitalResource::create(['hospital_id' => $hospital->id, 'resource_type' => 'Blood Bank', 'total_capacity' => 500, 'currently_in_use' => random_int(100, 400)]);
+        }
+
         // 3. Create 10 Doctors (Predictable Emails: dr.firstname@hospital.com)
         $doctorData = [
+            ['name' => 'Test Doctor', 'specialty' => 'General Practice', 'email' => 'test@doctor.com'],
             ['name' => 'Dr. Tariq Rahman', 'specialty' => 'Cardiology', 'email' => 'dr.tariq@square.com'],
             ['name' => 'Dr. Salma Ahmed', 'specialty' => 'Neurology', 'email' => 'dr.salma@evercare.com'],
             ['name' => 'Dr. Kamal Hossain', 'specialty' => 'Internal Medicine', 'email' => 'dr.kamal@united.com'],
@@ -90,6 +121,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Create 10 Predictable Patients
         $patientData = [
+            ['name' => 'Test Patient', 'email' => 'test@patient.com', 'gender' => 'male', 'blood' => 'O+'],
             ['name' => 'Rahim Uddin', 'email' => 'rahim.uddin@patient.com', 'gender' => 'male', 'blood' => 'O+'],
             ['name' => 'Fatema Begum', 'email' => 'fatema.begum@patient.com', 'gender' => 'female', 'blood' => 'B+'],
             ['name' => 'Karim Ali', 'email' => 'karim.ali@patient.com', 'gender' => 'male', 'blood' => 'A+'],
@@ -145,7 +177,7 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[0]->id,
             'doctor_id' => $doctors[0]->id,
-            'record_type' => 'lab_report',
+            'record_type' => 'lab',
             'diagnosis' => 'Routine Checkup',
             'medications_or_results' => "ECG: Normal. Blood Pressure: 140/90.",
             'date' => Carbon::now()->subDays(60)
@@ -197,7 +229,7 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[2]->id,
             'doctor_id' => $doctors[2]->id,
-            'record_type' => 'lab_report',
+            'record_type' => 'lab',
             'diagnosis' => 'Dengue Suspected',
             'medications_or_results' => "CBC & Dengue NS1 - Result: Positive.\nPlatelets: 120,000/mcL. Admit to hospital immediately.",
             'date' => Carbon::now()->subDays(5)
@@ -205,7 +237,7 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[2]->id,
             'doctor_id' => $doctors[2]->id,
-            'record_type' => 'discharge_summary',
+            'record_type' => 'document',
             'diagnosis' => 'Recovered from Dengue',
             'medications_or_results' => "Patient stabilized. Platelets rose to 200,000/mcL. Discharged with advice to rest.",
             'date' => Carbon::now()->subDays(1)
@@ -267,7 +299,7 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[5]->id,
             'doctor_id' => $doctors[5]->id,
-            'record_type' => 'lab_report',
+            'record_type' => 'lab',
             'diagnosis' => 'Annual Blood Work',
             'medications_or_results' => "Hemoglobin: 14.5 g/dL\nWBC: 6500 /mcL\nPlatelets: 250,000 /mcL",
             'date' => Carbon::now()->subDays(12)
@@ -277,7 +309,7 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[6]->id,
             'doctor_id' => $doctors[6]->id,
-            'record_type' => 'lab_report',
+            'record_type' => 'lab',
             'diagnosis' => 'Thyroid Checkup',
             'medications_or_results' => "TSH: 2.5 mIU/L\nFree T4: 1.2 ng/dL\nNormal Range",
             'date' => Carbon::now()->subDays(5)
@@ -287,7 +319,7 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[7]->id,
             'doctor_id' => $doctors[3]->id,
-            'record_type' => 'lab_report',
+            'record_type' => 'lab',
             'diagnosis' => 'Lipid Profile',
             'medications_or_results' => "Cholesterol: 190 mg/dL\nHDL: 50 mg/dL\nLDL: 110 mg/dL",
             'date' => Carbon::now()->subDays(22)
@@ -297,7 +329,7 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[8]->id,
             'doctor_id' => $doctors[1]->id,
-            'record_type' => 'lab_report',
+            'record_type' => 'lab',
             'diagnosis' => 'Diabetes Screening',
             'medications_or_results' => "Fasting Blood Sugar: 95 mg/dL\nHbA1c: 5.4%",
             'date' => Carbon::now()->subDays(30)
@@ -307,11 +339,80 @@ class DatabaseSeeder extends Seeder
         MedicalRecord::create([
             'patient_id' => $patients[9]->id,
             'doctor_id' => $doctors[2]->id,
-            'record_type' => 'lab_report',
+            'record_type' => 'lab',
             'diagnosis' => 'Liver Function Test',
             'medications_or_results' => "ALT: 25 U/L\nAST: 20 U/L\nBilirubin: 0.8 mg/dL",
             'date' => Carbon::now()->subDays(8)
         ]);
+
+        // --- Ensure ALL patients have rich medical history (3 prescriptions, 3 lab records, 2 documents) ---
+        foreach ($patients as $index => $patient) {
+            $doctor = $doctors[$index % count($doctors)];
+            $hospital = $hospitals[$index % count($hospitals)];
+
+            // Create 3 Appointments, Prescriptions, and Lab Reports
+            for ($i = 1; $i <= 3; $i++) {
+                $randomDate = Carbon::now()->subDays(random_int(1, 120));
+
+                Appointment::create([
+                    'patient_id' => $patient->id,
+                    'doctor_id' => $doctor->id,
+                    'hospital_id' => $hospital->id,
+                    'date' => $randomDate,
+                    'time_slot' => '10:00 AM',
+                    'status' => 'completed'
+                ]);
+
+                MedicalRecord::create([
+                    'patient_id' => $patient->id,
+                    'doctor_id' => $doctor->id,
+                    'record_type' => 'prescription',
+                    'diagnosis' => 'Follow-up Consultation #' . $i,
+                    'medications_or_results' => "Medication Course {$i}:\nParacetamol 500mg 1-1-1\nAntacid 20mg 1-0-1",
+                    'date' => $randomDate
+                ]);
+
+                $labTest = LabTestCatalog::inRandomOrder()->first();
+                LabOrder::create([
+                    'patient_id' => $patient->id,
+                    'doctor_id' => $doctor->id,
+                    'hospital_id' => $hospital->id,
+                    'lab_test_catalog_id' => $labTest->id,
+                    'status' => 'completed',
+                    'result_summary' => 'Tested parameters are within normal reference ranges.'
+                ]);
+
+                MedicalRecord::create([
+                    'patient_id' => $patient->id,
+                    'doctor_id' => $doctor->id,
+                    'record_type' => 'lab',
+                    'diagnosis' => $labTest->test_name . ' Result',
+                    'medications_or_results' => "All parameters detected within standard range.\nNo immediate concerns.",
+                    'date' => $randomDate->copy()->addDays(1)
+                ]);
+            }
+
+            // Create 2 Document Records
+            MedicalRecord::create([
+                'patient_id' => $patient->id,
+                'doctor_id' => $doctor->id,
+                'record_type' => 'document',
+                'diagnosis' => 'Discharge Summary',
+                'medications_or_results' => "Patient admitted for observation and discharged in stable condition.\nHospital stay duration: 2 days. Instructed to maintain bed rest.",
+                'document_path' => 'dummy/discharge_summary.pdf',
+                'date' => Carbon::now()->subDays(random_int(30, 60))
+            ]);
+
+            MedicalRecord::create([
+                'patient_id' => $patient->id,
+                'doctor_id' => $doctor->id,
+                'record_type' => 'document',
+                'diagnosis' => 'MRI Scan Details',
+                'medications_or_results' => "MRI of the lower back.\nNo disc herniations visible. Normal alignment.",
+                'document_path' => 'dummy/mri_scan_results.pdf',
+                'date' => Carbon::now()->subDays(random_int(60, 100))
+            ]);
+        }
 
         // --- Add some generic upcoming appointments for UI testing ---
         Appointment::create([
@@ -328,6 +429,64 @@ class DatabaseSeeder extends Seeder
             'hospital_id' => $hospitals[1]->id,
             'date' => Carbon::now()->addDays(5),
             'time_slot' => '12:00 PM',
+            'status' => 'pending'
+        ]);
+
+        // --- Add today's queue appointments for EVERY doctor ---
+        foreach ($doctors as $doctor) {
+            for ($i = 0; $i < 3; $i++) {
+                Appointment::create([
+                    'patient_id' => $patients[array_rand($patients)]->id,
+                    'doctor_id' => $doctor->id,
+                    'hospital_id' => $doctor->hospital_id,
+                    'date' => Carbon::today(),
+                    'time_slot' => '10:' . str_pad($i * 15, 2, '0', STR_PAD_LEFT) . ' AM',
+                    'status' => 'pending',
+                    'booking_id' => 'BK-' . strtoupper(uniqid()),
+                    'token_number' => $i + 1
+                ]);
+            }
+        }
+
+        // --- Add Doctor Evaluations ---
+        DoctorEvaluation::create([
+            'appointment_id' => Appointment::where('status', 'completed')->first()->id ?? 1,
+            'doctor_id' => $doctors[0]->id,
+            'patient_id' => $patients[0]->id,
+            'rating_1_to_5' => 5,
+            'feedback_text' => 'Excellent doctor, very attentive.',
+            'consultation_time_minutes' => 15
+        ]);
+
+        DoctorEvaluation::create([
+            'appointment_id' => Appointment::where('status', 'completed')->skip(1)->first()->id ?? 2,
+            'doctor_id' => $doctors[1]->id,
+            'patient_id' => $patients[1]->id,
+            'rating_1_to_5' => 4,
+            'feedback_text' => 'Good consultation but wait time was a bit long.',
+            'consultation_time_minutes' => 20
+        ]);
+
+        // --- Add explicit vaccinations for test patient ---
+        Vaccination::create([
+            'patient_id' => $patients[0]->id,
+            'vaccine_name' => 'Typhoid Vaccine',
+            'due_date' => Carbon::now()->subDays(5),
+            'status' => 'pending'
+        ]);
+        Vaccination::create([
+            'patient_id' => $patients[0]->id,
+            'vaccine_name' => 'Hepatitis B - Dose 3',
+            'due_date' => Carbon::now()->addDays(30),
+            'status' => 'pending'
+        ]);
+
+        // --- Add Dummy Lab Order ---
+        LabOrder::create([
+            'patient_id' => $patients[0]->id,
+            'doctor_id' => $doctors[0]->id,
+            'hospital_id' => $hospitals[0]->id,
+            'lab_test_catalog_id' => 1,
             'status' => 'pending'
         ]);
     }

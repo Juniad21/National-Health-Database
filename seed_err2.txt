@@ -1,0 +1,55 @@
+﻿
+  Dropping all tables  6.83ms DONE
+
+   INFO  Preparing database.  
+
+  Creating migration table  33.10ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table  20.63ms DONE
+  0001_01_01_000001_create_cache_table  12.51ms DONE
+  0001_01_01_000002_create_jobs_table  16.11ms DONE
+  2026_03_06_214927_create_valid_nids_table  6.31ms DONE
+  2026_03_06_224255_create_appointments_table  3.50ms DONE
+  2026_03_06_224255_create_medical_records_table  3.42ms DONE
+  2026_03_06_224256_create_health_metrics_table  3.54ms DONE
+  2026_03_06_224256_create_patient_consents_table  3.36ms DONE
+  2026_03_06_224257_create_blood_requests_table  3.65ms DONE
+  2026_03_07_220101_create_patients_table  6.87ms DONE
+  2026_03_07_220109_create_doctors_table  6.67ms DONE
+  2026_03_07_220111_create_hospitals_table  6.24ms DONE
+  2026_03_28_095807_create_access_requests_table  8.48ms DONE
+  2026_03_28_095808_create_lab_orders_table  3.44ms DONE
+  2026_03_28_095808_create_lab_test_catalogs_table  3.47ms DONE
+  2026_03_28_095808_create_vaccinations_table  3.38ms DONE
+  2026_03_28_095809_create_doctor_evaluations_table  3.61ms DONE
+  2026_03_28_095809_create_emergencies_table  4.20ms DONE
+  2026_03_28_095809_create_hospital_resources_table  3.59ms DONE
+  2026_03_28_095832_add_queue_fields_to_appointments_table  10.81ms DONE
+
+
+   INFO  Seeding database.  
+
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[23000]: Integrity constraint violation: 19 CHECK constraint failed: record_type (Connection: sqlite, Database: F:\470_Project\National-Health-DB\database\database.sqlite, SQL: insert into "medical_records" ("patient_id", "doctor_id", "record_type", "diagnosis", "medications_or_results", "date", "updated_at", "created_at") values (1, 1, lab, Routine Checkup, ECG: Normal. Blood Pressure: 140/90., 2026-01-27 10:20:04, 2026-03-28 10:20:04, 2026-03-28 10:20:04))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:838
+    834Γûò             $exceptionType = $this->isUniqueConstraintError($e)
+    835Γûò                 ? UniqueConstraintViolationException::class
+    836Γûò                 : QueryException::class;
+    837Γûò 
+  Γ₧£ 838Γûò             throw new $exceptionType(
+    839Γûò                 $this->getNameWithReadWriteType(),
+    840Γûò                 $query,
+    841Γûò                 $this->prepareBindings($bindings),
+    842Γûò                 $e,
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+      PDOException::("SQLSTATE[23000]: Integrity constraint violation: 19 CHECK constraint failed: record_type")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+      PDOStatement::execute()
+

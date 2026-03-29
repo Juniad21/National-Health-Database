@@ -4,6 +4,36 @@
 
 @section('content')
 
+    <!-- Pre-Computation for active unrated appointments -->
+    @php
+        $unratedAppointment = \App\Models\Appointment::where('patient_id', Auth::user()->patient->id)
+            ->where('status', 'completed')
+            ->whereNotIn('id', \App\Models\DoctorEvaluation::pluck('appointment_id'))
+            ->with('doctor')
+            ->orderBy('updated_at', 'desc')
+            ->first();
+    @endphp
+
+    <!-- Emergency SOS Button -->
+    <div class="mb-8 flex justify-center">
+        <form action="{{ route('patient.emergency.trigger') }}" method="POST" class="w-full max-w-sm">
+            @csrf
+            <button type="submit"
+                onclick="return confirm('Are you sure you want to trigger an EMERGENCY ALERT? This will immediately notify nearby hospitals.')"
+                class="w-full relative group h-24 flex items-center justify-center rounded-3xl bg-gradient-to-r from-red-600 to-rose-700 text-white font-black text-2xl tracking-widest shadow-[0_0_40px_rgba(225,29,72,0.6)] hover:shadow-[0_0_60px_rgba(225,29,72,0.8)] transition-all duration-300">
+                <span
+                    class="absolute inset-0 rounded-3xl border-4 border-white/20 group-hover:border-white/40 transition-colors"></span>
+                <span
+                    class="absolute inset-0 rounded-3xl bg-red-500 opacity-0 group-hover:opacity-20 animate-ping transition-opacity"></span>
+                <svg class="w-10 h-10 mr-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
+                    </path>
+                </svg>
+                SOS EMERGENCY
+            </button>
+        </form>
+    </div>
+
     <!-- Urgent Blood Alerts -->
     @if(isset($urgentBloodRequests) && count($urgentBloodRequests) > 0)
         @foreach($urgentBloodRequests as $request)
@@ -53,7 +83,8 @@
                                 <div class="w-2 h-10 bg-teal-400 rounded-full"></div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">
-                                        {{ \Carbon\Carbon::parse($metric->recorded_date)->format('M d, Y') }}</p>
+                                        {{ \Carbon\Carbon::parse($metric->recorded_date)->format('M d, Y') }}
+                                    </p>
                                     <p class="text-xs text-gray-500 font-medium">Recorded Date</p>
                                 </div>
                             </div>
@@ -89,40 +120,102 @@
             </h3>
 
             <div class="space-y-4">
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <div>
-                        <p class="font-bold text-gray-800">COVID-19 Booster</p>
-                        <p class="text-sm text-green-600 font-medium">Completed: Jan 15, 2025</p>
-                    </div>
-                    <button
-                        class="px-4 py-2 bg-white border border-gray-200 text-teal-600 text-sm font-semibold rounded-xl hover:bg-teal-50 hover:border-teal-200 transition-all shadow-sm">
-                        Download Cert
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                    <div>
-                        <p class="font-bold text-gray-800">Influenza (Flu)</p>
-                        <p class="text-sm text-orange-600 font-medium">Next Due: Nov 2026</p>
-                    </div>
-                    <button
-                        class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 transition-all shadow-sm shadow-orange-200">
-                        Schedule
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <div>
-                        <p class="font-bold text-gray-800">Hepatitis B</p>
-                        <p class="text-sm text-green-600 font-medium">Completed: Mar 10, 2024</p>
-                    </div>
-                    <button
-                        class="px-4 py-2 bg-white border border-gray-200 text-teal-600 text-sm font-semibold rounded-xl hover:bg-teal-50 hover:border-teal-200 transition-all shadow-sm">
-                        Download Cert
-                    </button>
-                </div>
+                @if(isset($vaccinations) && $vaccinations->count() > 0)
+                    @foreach($vaccinations as $vaccine)
+                        <div class="flex items-center justify-between p-4 rounded-2xl border {{ $vaccine->status === 'taken' ? 'bg-gray-50 border-gray-100' : 'bg-orange-50 border-orange-100' }}">
+                            <div>
+                                <p class="font-bold text-gray-800">{{ $vaccine->vaccine_name }}</p>
+                                @if($vaccine->status === 'taken')
+                                    <p class="text-sm text-green-600 font-medium flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Taken on {{ \Carbon\Carbon::parse($vaccine->updated_at)->format('M d, Y') }}
+                                    </p>
+                                @else
+                                    <p class="text-sm text-orange-600 font-medium flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Due: {{ \Carbon\Carbon::parse($vaccine->due_date)->format('M d, Y') }}
+                                    </p>
+                                @endif
+                            </div>
+                            
+                            @if($vaccine->status === 'pending')
+                                <form action="{{ route('patient.vaccinations.mark_taken', $vaccine->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" onclick="return confirm('Are you sure you want to mark this vaccine as taken?')"
+                                        class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 transition-all shadow-sm shadow-orange-200">
+                                        Mark as Taken
+                                    </button>
+                                </form>
+                            @else
+                                <button disabled
+                                    class="px-4 py-2 bg-white border border-gray-200 text-teal-600 text-sm font-bold rounded-xl shadow-sm opacity-50">
+                                    Completed
+                                </button>
+                            @endif
+                        </div>
+                    @endforeach
+                @else
+                    <div class="text-center py-6 text-gray-400 text-sm font-medium">No immunization records found.</div>
+                @endif
             </div>
         </div>
 
     </div>
+
+    <!-- Rating Modal -->
+    @if($unratedAppointment)
+        <div x-data="{ open: true }" x-show="open"
+            class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/75 backdrop-blur-sm">
+            <div @click.away="open = false"
+                class="relative w-full max-w-md p-6 bg-white rounded-3xl shadow-2xl transform transition-all">
+                <div class="text-center mb-6">
+                    <div
+                        class="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">Rate Your Visit</h3>
+                    <p class="text-gray-500 text-sm mt-1">How was your recent consultation with Dr.
+                        {{ $unratedAppointment->doctor->first_name }}?</p>
+                </div>
+
+                <form action="{{ route('patient.evaluation.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="appointment_id" value="{{ $unratedAppointment->id }}">
+
+                    <div class="flex justify-center gap-2 mb-6" x-data="{ rating: 0, hoverRating: 0 }">
+                        <input type="hidden" name="rating" x-model="rating">
+                        <template x-for="i in 5">
+                            <svg @click="rating = i" @mouseenter="hoverRating = i" @mouseleave="hoverRating = 0"
+                                class="w-10 h-10 cursor-pointer transition-colors"
+                                :class="(hoverRating >= i || (!hoverRating && rating >= i)) ? 'text-yellow-400' : 'text-gray-200'"
+                                fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </template>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Additional Feedback (Optional)</label>
+                        <textarea name="feedback_text" rows="3"
+                            class="w-full border border-gray-200 rounded-xl focus:ring-teal-500 focus:border-teal-500 text-sm shadow-sm"
+                            placeholder="Tell us about your experience..."></textarea>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 shadow-md transition-all">
+                        Submit Feedback
+                    </button>
+                    <button type="button" @click="open = false"
+                        class="w-full py-2 mt-2 text-gray-500 font-semibold hover:text-gray-800 transition-colors text-sm">
+                        Dismiss
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 @endsection

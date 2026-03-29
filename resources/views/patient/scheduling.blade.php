@@ -34,25 +34,25 @@
             <h3 class="text-lg font-bold text-gray-800 mb-6">Book an Appointment</h3>
 
             <div class="mb-8 space-y-4">
-                <div>
+                <div class="relative" x-data="{ open: false }">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Doctor Specialty</label>
-                    <input type="text" x-model="searchSpecialty" list="specialtiesList" placeholder="e.g. Cardiology"
+                    <input type="text" x-model="searchSpecialty" @focus="open = true" @click.away="open = false" placeholder="e.g. Cardiology"
                         class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm text-sm">
-                    <datalist id="specialtiesList">
-                        <template x-for="spec in uniqueSpecialties" :key="spec">
-                            <option :value="spec"></option>
+                    <ul x-show="open && uniqueSpecialties.length > 0 && searchSpecialty !== ''" class="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                        <template x-for="spec in uniqueSpecialties.filter(s => s.toLowerCase().includes(searchSpecialty.toLowerCase()))" :key="spec">
+                            <li @click="searchSpecialty = spec; open = false" class="px-4 py-2 hover:bg-teal-50 cursor-pointer text-sm text-gray-700" x-text="spec"></li>
                         </template>
-                    </datalist>
+                    </ul>
                 </div>
-                <div>
+                <div class="relative" x-data="{ open: false }">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Hospital Name</label>
-                    <input type="text" x-model="searchHospital" list="hospitalsList" placeholder="e.g. Square Hospital"
+                    <input type="text" x-model="searchHospital" @focus="open = true" @click.away="open = false" placeholder="e.g. Square Hospital"
                         class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm text-sm">
-                    <datalist id="hospitalsList">
-                        <template x-for="hosp in uniqueHospitals" :key="hosp">
-                            <option :value="hosp"></option>
+                    <ul x-show="open && uniqueHospitals.length > 0 && searchHospital !== ''" class="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                        <template x-for="hosp in uniqueHospitals.filter(h => h.toLowerCase().includes(searchHospital.toLowerCase()))" :key="hosp">
+                            <li @click="searchHospital = hosp; open = false" class="px-4 py-2 hover:bg-teal-50 cursor-pointer text-sm text-gray-700" x-text="hosp"></li>
                         </template>
-                    </datalist>
+                    </ul>
                 </div>
             </div>
 
@@ -108,9 +108,61 @@
             </form>
         </div>
 
-        <!-- Active Appointments -->
-        <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <h3 class="text-lg font-bold text-gray-800 mb-6">Upcoming & Past Appointments</h3>
+        <!-- Appointments Column -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- Live Queue Tracker (Today) -->
+            @php
+                $todayQueue = $appointments->filter(function($app) {
+                    return \Carbon\Carbon::parse($app->date)->isToday() && $app->status === 'pending';
+                });
+            @endphp
+
+            @if($todayQueue->count() > 0)
+                <div class="bg-gradient-to-br from-teal-500 to-emerald-600 p-8 rounded-3xl shadow-lg border border-teal-600 text-white relative overflow-hidden">
+                    <!-- Decorative background elements -->
+                    <div class="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 rounded-full bg-white opacity-10"></div>
+                    <div class="absolute bottom-0 right-20 mb-[-20px] w-20 h-20 rounded-full bg-white opacity-10"></div>
+                    
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2 relative z-10">
+                        <span class="relative flex h-3 w-3 mr-1">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                        </span>
+                        Live Queue Tracker
+                    </h3>
+
+                    <div class="space-y-4 relative z-10">
+                        @foreach($todayQueue as $app)
+                            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 flex flex-col sm:flex-row items-center justify-between">
+                                <div>
+                                    <p class="font-bold text-lg">Dr. {{ $app->doctor->last_name }} ({{ $app->time_slot }})</p>
+                                    <p class="text-teal-100 text-sm flex items-center gap-1 mt-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                        {{ $app->hospital->name }}
+                                    </p>
+                                </div>
+                                <div class="mt-4 sm:mt-0 flex gap-4 text-center">
+                                    <div class="bg-white text-teal-800 rounded-xl px-4 py-2 shadow-sm min-w-[100px]">
+                                        <p class="text-xs font-bold uppercase tracking-wider text-teal-500 mb-0.5">Booking ID</p>
+                                        <p class="text-xl font-black">{{ $app->booking_id ?? 'N/A' }}</p>
+                                    </div>
+                                    <div class="bg-white text-emerald-800 rounded-xl px-4 py-2 shadow-sm min-w-[100px]">
+                                        <p class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-0.5">Token No.</p>
+                                        <p class="text-2xl font-black flex justify-center items-center gap-1">
+                                            #{{ $app->token_number ?? 'N/A' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <!-- Active Appointments -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">Upcoming & Past Appointments</h3>
 
             @if($appointments->count() > 0)
                 <div class="overflow-x-auto">
@@ -128,7 +180,7 @@
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="py-4">
                                         <p class="font-bold text-gray-800">
-                                            {{ \Carbon\Carbon::parse($app->appointment_date)->format('M d, Y') }}</p>
+                                            {{ \Carbon\Carbon::parse($app->date)->format('M d, Y') }}</p>
                                         <p class="text-sm text-gray-500">{{ $app->time_slot }}</p>
                                     </td>
                                     <td class="py-4">
@@ -166,6 +218,7 @@
                     <p class="text-gray-500 font-medium">You have no appointments booked yet.</p>
                 </div>
             @endif
+            </div>
         </div>
 
     </div>
