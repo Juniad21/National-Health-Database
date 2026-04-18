@@ -1,20 +1,18 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Patient\PatientDashboardController;
+use App\Http\Controllers\Doctor\DoctorDashboardController;
+use App\Http\Controllers\Hospital\HospitalDashboardController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-use App\Http\Controllers\PatientDashboardController;
-
 Route::get('/dashboard', [PatientDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
-
-use App\Http\Controllers\DoctorDashboardController;
-use App\Http\Controllers\HospitalDashboardController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Patient Routes
