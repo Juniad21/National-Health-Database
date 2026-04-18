@@ -7,14 +7,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-use App\Http\Controllers\PatientDashboardController;
+use App\Http\Controllers\Patient\PatientDashboardController;
 
 Route::get('/dashboard', [PatientDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-use App\Http\Controllers\DoctorDashboardController;
-use App\Http\Controllers\HospitalDashboardController;
+use App\Http\Controllers\Doctor\DoctorDashboardController;
+use App\Http\Controllers\Hospital\HospitalDashboardController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Patient Routes
