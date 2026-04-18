@@ -10,7 +10,9 @@
              x-data="{
                 searchSpecialty: '',
                 searchHospital: '',
-                doctors: {{ Js::from($doctors->map(fn($d) => ['id' => $d->id, 'name' => 'Dr. '.$d->first_name.' '.$d->last_name, 'specialty' => $d->specialty ?? 'General', 'hospital' => $d->hospital->name])) }},
+                selectedDoctorId: null,
+                selectedDoctorHospitalId: null,
+                doctors: {{ Js::from($doctors->map(fn($d) => ['id' => $d->id, 'name' => 'Dr. '.$d->user->name, 'specialty' => $d->specialty ?? 'General', 'hospital' => $d->hospital->name, 'hospital_id' => $d->hospital->id])) }},
                 get filteredDoctors() {
                     return this.doctors.filter(d => {
                         let matchSpecialty = true;
@@ -30,7 +32,8 @@
                 get uniqueHospitals() {
                     return [...new Set(this.doctors.map(d => d.hospital))];
                 }
-             }">
+             }"
+             x-effect="selectedDoctorHospitalId = (doctors.find(d => d.id == selectedDoctorId) || {}).hospital_id || null">
             <h3 class="text-lg font-bold text-gray-800 mb-6">Book an Appointment</h3>
 
             <div class="mb-8 space-y-4">
@@ -62,24 +65,15 @@
                 @csrf
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Select Doctor</label>
-                    <select name="doctor_id" required
+                    <select name="doctor_id" x-model="selectedDoctorId" required
                         class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm">
                         <option value="" disabled selected>Choose a Doctor...</option>
                         <template x-for="doc in filteredDoctors" :key="doc.id">
                             <option :value="doc.id" x-text="doc.name + ' (' + doc.specialty + ') - ' + doc.hospital"></option>
                         </template>
+                        <option value="" disabled x-show="filteredDoctors.length === 0">No doctors match your filters</option>
                     </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Select Hospital</label>
-                    <select name="hospital_id" required
-                        class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm">
-                        <option value="" disabled selected>Choose a Hospital...</option>
-                        @foreach($hospitals as $hospital)
-                            <option value="{{ $hospital->id }}">{{ $hospital->name }}</option>
-                        @endforeach
-                    </select>
+                    <input type="hidden" name="hospital_id" :value="selectedDoctorHospitalId">
                 </div>
 
                 <div>
