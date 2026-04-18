@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Patient;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class PatientDashboardController extends Controller
 {
@@ -43,18 +44,14 @@ class PatientDashboardController extends Controller
             ->orderBy('date', 'desc')
             ->get();
         
-        // Get all available doctors for scheduling
-        $doctors = \App\Models\Doctor::with('hospital')
-            ->orderBy('first_name', 'asc')
+        // Get all available doctors for scheduling, with hospital and user details
+        $doctors = \App\Models\Doctor::with(['hospital', 'user'])
+            ->orderBy('id', 'asc')
             ->get();
-        
-        // Get all hospitals
-        $hospitals = \App\Models\Hospital::orderBy('name', 'asc')->get();
         
         return view('patient.scheduling', [
             'appointments' => $appointments,
             'doctors' => $doctors,
-            'hospitals' => $hospitals
         ]);
     }
 
@@ -62,23 +59,26 @@ class PatientDashboardController extends Controller
     {
         $validated = $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
-            'hospital_id' => 'required|exists:hospitals,id',
             'appointment_date' => 'required|date|after:today',
             'time_slot' => 'required|string',
         ]);
+
+        $doctor = \App\Models\Doctor::with('hospital')->findOrFail($validated['doctor_id']);
+        $hospitalId = $doctor->hospital_id;
 
         $patient = Auth::user()->patient;
 
         \App\Models\Appointment::create([
             'patient_id' => $patient->id,
             'doctor_id' => $validated['doctor_id'],
-            'hospital_id' => $validated['hospital_id'],
+            'hospital_id' => $hospitalId,
             'date' => $validated['appointment_date'],
             'time_slot' => $validated['time_slot'],
-            'status' => 'scheduled',
+            'status' => 'pending',
+            'booking_id' => 'BK-' . Str::upper(Str::random(12)),
         ]);
 
-        return redirect()->route('patient.scheduling')->with('success', 'Appointment scheduled successfully!');
+        return redirect()->route('patient.scheduling')->with('success', 'Appointment requested successfully. The doctor will approve it shortly.');
     }
 
     public function medicalRecords()

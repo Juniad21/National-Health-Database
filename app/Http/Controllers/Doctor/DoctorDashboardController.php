@@ -9,13 +9,20 @@ use Carbon\Carbon;
 
 class DoctorDashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $doctor = Auth::user()->doctor;
-        
+        $search = $request->query('search', '');
+
+        $pendingApprovals = \App\Models\Appointment::where('doctor_id', $doctor->id)
+            ->where('status', 'pending')
+            ->with(['patient', 'hospital'])
+            ->orderBy('date', 'asc')
+            ->get();
+
         $queue = \App\Models\Appointment::where('doctor_id', $doctor->id)
             ->whereDate('date', Carbon::today())
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->with('patient')
             ->orderBy('time_slot', 'asc')
             ->get();
@@ -24,9 +31,20 @@ class DoctorDashboardController extends Controller
         $queue = $queue->each(function ($appointment, $key) {
             $appointment->token_number = $key + 1;
         });
+
+        $patientResults = null;
+        if ($search !== '') {
+            $patientResults = \App\Models\Patient::where('nid', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%")
+                ->get();
+        }
         
         return view('doctor.dashboard', [
-            'queue' => $queue
+            'queue' => $queue,
+            'pendingApprovals' => $pendingApprovals,
+            'search' => $search,
+            'patientResults' => $patientResults,
+            'doctor' => $doctor,
         ]);
     }
 
@@ -109,5 +127,18 @@ class DoctorDashboardController extends Controller
         $appointment->update(['status' => 'completed']);
 
         return redirect()->back()->with('success', 'Patient marked as visited!');
+    }
+
+    public function approveAppointment(Request $request, $appointment_id)
+    {
+        $doctor = Auth::user()->doctor;
+        $appointment = \App\Models\Appointment::where('id', $appointment_id)
+            ->where('doctor_id', $doctor->id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $appointment->update(['status' => 'confirmed']);
+
+        return redirect()->back()->with('success', 'Appointment approved successfully.');
     }
 }
