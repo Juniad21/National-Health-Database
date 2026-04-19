@@ -59,7 +59,7 @@ class PatientDashboardController extends Controller
     {
         $validated = $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
-            'appointment_date' => 'required|date|after:today',
+            'date' => 'required|date|after_or_equal:today',
             'time_slot' => 'required|string',
         ]);
 
@@ -72,9 +72,9 @@ class PatientDashboardController extends Controller
             'patient_id' => $patient->id,
             'doctor_id' => $validated['doctor_id'],
             'hospital_id' => $hospitalId,
-            'date' => $validated['appointment_date'],
+            'date' => $validated['date'],
             'time_slot' => $validated['time_slot'],
-            'status' => 'pending',
+            'status' => 'Pending',
             'booking_id' => 'BK-' . Str::upper(Str::random(12)),
         ]);
 
