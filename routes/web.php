@@ -35,9 +35,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/doctor/dashboard', [DoctorDashboardController::class, 'index'])->name('doctor.dashboard');
     Route::get('/doctor/patient/{id}', [DoctorDashboardController::class, 'viewPatient'])->name('doctor.patient.view');
     Route::post('/doctor/patient/{id}/request-access', [DoctorDashboardController::class, 'requestAccess'])->name('doctor.patient.request_access');
+    Route::post('/doctor/patient/{patient_id}/medical-record', [DoctorDashboardController::class, 'storeMedicalRecord'])->name('doctor.medical_record.store');
     Route::get('/doctor/consultation/{patient_id}', [DoctorDashboardController::class, 'consultation'])->name('doctor.consultation');
     Route::post('/doctor/consultation/{patient_id}', [DoctorDashboardController::class, 'storeConsultation'])->name('doctor.consultation.store');
     Route::post('/doctor/queue/{appointment_id}/visit', [DoctorDashboardController::class, 'markVisited'])->name('doctor.queue.visit');
+    Route::post('/doctor/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('doctor.appointment.approve');
 
     // Hospital Routes
     Route::get('/hospital/dashboard', [HospitalDashboardController::class, 'index'])->name('hospital.dashboard');

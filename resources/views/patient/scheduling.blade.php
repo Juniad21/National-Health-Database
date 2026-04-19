@@ -10,7 +10,9 @@
              x-data="{
                 searchSpecialty: '',
                 searchHospital: '',
-                doctors: {{ Js::from($doctors->map(fn($d) => ['id' => $d->id, 'name' => 'Dr. '.$d->first_name.' '.$d->last_name, 'specialty' => $d->specialty ?? 'General', 'hospital' => $d->hospital->name])) }},
+                selectedDoctorId: null,
+                selectedDoctorHospitalId: null,
+                doctors: {{ Js::from($doctors->map(fn($d) => ['id' => $d->id, 'name' => 'Dr. '.trim($d->first_name.' '.$d->last_name), 'specialty' => $d->specialty ?? 'General', 'hospital' => $d->hospital->name ?? 'Unknown', 'hospital_id' => $d->hospital->id ?? null])) }},
                 get filteredDoctors() {
                     return this.doctors.filter(d => {
                         let matchSpecialty = true;
@@ -30,7 +32,8 @@
                 get uniqueHospitals() {
                     return [...new Set(this.doctors.map(d => d.hospital))];
                 }
-             }">
+             }"
+             x-effect="selectedDoctorHospitalId = (doctors.find(d => d.id == selectedDoctorId) || {}).hospital_id || null">
             <h3 class="text-lg font-bold text-gray-800 mb-6">Book an Appointment</h3>
 
             <div class="mb-8 space-y-4">
@@ -62,29 +65,20 @@
                 @csrf
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Select Doctor</label>
-                    <select name="doctor_id" required
+                    <select name="doctor_id" x-model="selectedDoctorId" required
                         class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm">
                         <option value="" disabled selected>Choose a Doctor...</option>
                         <template x-for="doc in filteredDoctors" :key="doc.id">
                             <option :value="doc.id" x-text="doc.name + ' (' + doc.specialty + ') - ' + doc.hospital"></option>
                         </template>
+                        <option value="" disabled x-show="filteredDoctors.length === 0">No doctors match your filters</option>
                     </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Select Hospital</label>
-                    <select name="hospital_id" required
-                        class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm">
-                        <option value="" disabled selected>Choose a Hospital...</option>
-                        @foreach($hospitals as $hospital)
-                            <option value="{{ $hospital->id }}">{{ $hospital->name }}</option>
-                        @endforeach
-                    </select>
+                    <input type="hidden" name="hospital_id" :value="selectedDoctorHospitalId">
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Date</label>
-                    <input type="date" name="appointment_date" required
+                    <input type="date" name="date" required
                         class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm">
                 </div>
 
@@ -114,7 +108,8 @@
             <!-- Live Queue Tracker (Today) -->
             @php
                 $todayQueue = $appointments->filter(function($app) {
-                    return \Carbon\Carbon::parse($app->date)->isToday() && $app->status === 'pending';
+                    $status = strtolower($app->status);
+                    return \Carbon\Carbon::parse($app->date)->isToday() && ($status === 'pending' || $status === 'approved');
                 });
             @endphp
 
@@ -150,7 +145,7 @@
                                     <div class="bg-white text-emerald-800 rounded-xl px-4 py-2 shadow-sm min-w-[100px]">
                                         <p class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-0.5">Token No.</p>
                                         <p class="text-2xl font-black flex justify-center items-center gap-1">
-                                            #{{ $app->token_number ?? 'N/A' }}
+                                            {{ $app->token_number ?? 'Wait...' }}
                                         </p>
                                     </div>
                                 </div>
@@ -197,12 +192,12 @@
                                     </td>
                                     <td class="py-4 text-sm text-gray-700 font-medium">{{ $app->hospital->name }}</td>
                                     <td class="py-4">
-                                        @if($app->status === 'pending')
+                                        @if(strtolower($app->status) === 'pending')
                                             <span
                                                 class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">Pending</span>
-                                        @elseif($app->status === 'confirmed')
+                                        @elseif(strtolower($app->status) === 'approved' || strtolower($app->status) === 'confirmed')
                                             <span
-                                                class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Confirmed</span>
+                                                class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Approved</span>
                                         @else
                                             <span
                                                 class="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-bold rounded-full">{{ ucfirst($app->status) }}</span>
