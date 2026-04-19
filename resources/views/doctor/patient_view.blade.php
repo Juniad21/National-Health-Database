@@ -132,9 +132,15 @@
                             <textarea name="notes" rows="4" placeholder="Enter test requirements or special instructions" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
                         </div>
 
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-sm text-blue-800">
+                                <span class="font-semibold">📍 Hospital:</span> This test will be sent to <span class="font-bold text-blue-600">{{ Auth::user()->doctor->hospital->name ?? 'N/A' }}</span>
+                            </p>
+                        </div>
+
                         <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                             <p class="text-sm text-yellow-800">
-                                <span class="font-semibold">Note:</span> Lab tests will be marked as <span class="font-bold text-yellow-600">Pending 🟡</span> until the hospital completes and uploads the results.
+                                <span class="font-semibold">⏳ Status:</span> Lab tests will be marked as <span class="font-bold text-yellow-600">Pending 🟡</span> until {{ Auth::user()->doctor->hospital->name ?? 'the hospital' }} completes and uploads the results.
                             </p>
                         </div>
 
