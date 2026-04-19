@@ -152,12 +152,16 @@ class DoctorDashboardController extends Controller
 
         $patient = \App\Models\Patient::findOrFail($patient_id);
         $doctor = Auth::user()->doctor;
+        
+        // Get the hospital where the doctor works
+        $hospital = $doctor->hospital;
 
         $status = $validated['type'] === 'lab_test' ? 'pending' : 'completed';
 
         \App\Models\MedicalRecord::create([
             'patient_id' => $patient->id,
             'doctor_id' => $doctor->id,
+            'hospital_id' => $hospital?->id,
             'record_type' => $validated['type'],
             'diagnosis' => $validated['title'],
             'medications_or_results' => $validated['notes'],
@@ -165,6 +169,10 @@ class DoctorDashboardController extends Controller
             'date' => now(),
         ]);
 
-        return redirect()->back()->with('success', 'Medical record added successfully!');
+        $message = $validated['type'] === 'lab_test' 
+            ? "Lab test sent to {$hospital?->name}! Status: Pending" 
+            : 'Medical record added successfully!';
+
+        return redirect()->back()->with('success', $message);
     }
 }
