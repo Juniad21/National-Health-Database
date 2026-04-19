@@ -42,16 +42,16 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Today's Confirmed Queue
+                Today's Waiting Queue
             </h3>
             
-            @if($queue->count() > 0)
+            @if($waitingQueue->count() > 0)
                 <div class="space-y-4">
-                    @foreach($queue as $appointment)
+                    @foreach($waitingQueue as $appointment)
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 transition-colors">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg border-2 border-white shadow-sm">
-                                    #{{ $appointment->token_number }}
+                                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg border-2 border-white shadow-sm" style="font-size: 0.8rem;">
+                                    {{ $appointment->token_number ?? 'TKN' }}
                                 </div>
                                 <div>
                                     <h4 class="font-semibold text-gray-800">{{ $appointment->patient->first_name }} {{ $appointment->patient->last_name }}</h4>
@@ -65,7 +65,7 @@
                                 <form action="{{ route('doctor.queue.visit', $appointment->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="px-3 py-1.5 bg-blue-600 border border-transparent text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors">
-                                        Mark Visited
+                                        Call Patient / Mark Completed
                                     </button>
                                 </form>
                             </div>
