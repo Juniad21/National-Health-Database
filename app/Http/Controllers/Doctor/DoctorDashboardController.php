@@ -20,17 +20,11 @@ class DoctorDashboardController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        $queue = \App\Models\Appointment::where('doctor_id', $doctor->id)
-            ->whereDate('date', Carbon::today())
-            ->where('status', 'confirmed')
-            ->with('patient')
+        $waitingQueue = \App\Models\Appointment::with('patient')
+            ->where('doctor_id', $doctor->id)
+            ->where('status', 'approved')
             ->orderBy('time_slot', 'asc')
             ->get();
-            
-        // Add token numbers
-        $queue = $queue->each(function ($appointment, $key) {
-            $appointment->token_number = $key + 1;
-        });
 
         $patientResults = null;
         if ($search !== '') {
@@ -40,7 +34,7 @@ class DoctorDashboardController extends Controller
         }
         
         return view('doctor.dashboard', [
-            'queue' => $queue,
+            'waitingQueue' => $waitingQueue,
             'pendingApprovals' => $pendingApprovals,
             'search' => $search,
             'patientResults' => $patientResults,
@@ -137,8 +131,11 @@ class DoctorDashboardController extends Controller
             ->where('status', 'pending')
             ->firstOrFail();
 
-        $appointment->update(['status' => 'confirmed']);
+        $appointment->update([
+            'status' => 'approved',
+            'token_number' => 'TKN-' . strtoupper(\Illuminate\Support\Str::random(5))
+        ]);
 
-        return redirect()->back()->with('success', 'Appointment approved successfully.');
+        return redirect()->back()->with('success', 'Appointment approved successfully. Patient added to queue.');
     }
 }

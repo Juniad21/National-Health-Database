@@ -108,7 +108,8 @@
             <!-- Live Queue Tracker (Today) -->
             @php
                 $todayQueue = $appointments->filter(function($app) {
-                    return \Carbon\Carbon::parse($app->date)->isToday() && strtolower($app->status) === 'pending';
+                    $status = strtolower($app->status);
+                    return \Carbon\Carbon::parse($app->date)->isToday() && ($status === 'pending' || $status === 'approved');
                 });
             @endphp
 
@@ -144,7 +145,7 @@
                                     <div class="bg-white text-emerald-800 rounded-xl px-4 py-2 shadow-sm min-w-[100px]">
                                         <p class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-0.5">Token No.</p>
                                         <p class="text-2xl font-black flex justify-center items-center gap-1">
-                                            #{{ $app->token_number ?? 'N/A' }}
+                                            {{ $app->token_number ?? 'Wait...' }}
                                         </p>
                                     </div>
                                 </div>
@@ -194,9 +195,9 @@
                                         @if(strtolower($app->status) === 'pending')
                                             <span
                                                 class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">Pending</span>
-                                        @elseif(strtolower($app->status) === 'confirmed')
+                                        @elseif(strtolower($app->status) === 'approved' || strtolower($app->status) === 'confirmed')
                                             <span
-                                                class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Confirmed</span>
+                                                class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Approved</span>
                                         @else
                                             <span
                                                 class="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-bold rounded-full">{{ ucfirst($app->status) }}</span>
