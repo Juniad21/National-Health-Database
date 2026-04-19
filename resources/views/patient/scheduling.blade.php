@@ -12,7 +12,7 @@
                 searchHospital: '',
                 selectedDoctorId: null,
                 selectedDoctorHospitalId: null,
-                doctors: {{ Js::from($doctors->map(fn($d) => ['id' => $d->id, 'name' => 'Dr. '.$d->user->name, 'specialty' => $d->specialty ?? 'General', 'hospital' => $d->hospital->name, 'hospital_id' => $d->hospital->id])) }},
+                doctors: {{ Js::from($doctors->map(fn($d) => ['id' => $d->id, 'name' => 'Dr. '.trim($d->first_name.' '.$d->last_name), 'specialty' => $d->specialty ?? 'General', 'hospital' => $d->hospital->name ?? 'Unknown', 'hospital_id' => $d->hospital->id ?? null])) }},
                 get filteredDoctors() {
                     return this.doctors.filter(d => {
                         let matchSpecialty = true;
@@ -78,7 +78,7 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Date</label>
-                    <input type="date" name="appointment_date" required
+                    <input type="date" name="date" required
                         class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm">
                 </div>
 
@@ -108,7 +108,7 @@
             <!-- Live Queue Tracker (Today) -->
             @php
                 $todayQueue = $appointments->filter(function($app) {
-                    return \Carbon\Carbon::parse($app->date)->isToday() && $app->status === 'pending';
+                    return \Carbon\Carbon::parse($app->date)->isToday() && strtolower($app->status) === 'pending';
                 });
             @endphp
 
@@ -191,10 +191,10 @@
                                     </td>
                                     <td class="py-4 text-sm text-gray-700 font-medium">{{ $app->hospital->name }}</td>
                                     <td class="py-4">
-                                        @if($app->status === 'pending')
+                                        @if(strtolower($app->status) === 'pending')
                                             <span
                                                 class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">Pending</span>
-                                        @elseif($app->status === 'confirmed')
+                                        @elseif(strtolower($app->status) === 'confirmed')
                                             <span
                                                 class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Confirmed</span>
                                         @else
