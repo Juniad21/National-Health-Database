@@ -51,9 +51,12 @@ class DoctorDashboardController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
+        // Group records by type for display
+        $records = $medicalRecords->groupBy('record_type');
+
         return view('doctor.patient_view', [
             'patient' => $patient,
-            'medicalRecords' => $medicalRecords
+            'records' => $records
         ]);
     }
 
@@ -137,5 +140,39 @@ class DoctorDashboardController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Appointment approved successfully. Patient added to queue.');
+    }
+
+    public function storeMedicalRecord(Request $request, $patient_id)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:prescription,lab_test,document',
+            'title' => 'required|string|max:255',
+            'notes' => 'required|string',
+        ]);
+
+        $patient = \App\Models\Patient::findOrFail($patient_id);
+        $doctor = Auth::user()->doctor;
+        
+        // Get the hospital where the doctor works
+        $hospital = $doctor->hospital;
+
+        $status = $validated['type'] === 'lab_test' ? 'pending' : 'completed';
+
+        \App\Models\MedicalRecord::create([
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctor->id,
+            'hospital_id' => $hospital?->id,
+            'record_type' => $validated['type'],
+            'diagnosis' => $validated['title'],
+            'medications_or_results' => $validated['notes'],
+            'status' => $status,
+            'date' => now(),
+        ]);
+
+        $message = $validated['type'] === 'lab_test' 
+            ? "Lab test sent to {$hospital?->name}! Status: Pending" 
+            : 'Medical record added successfully!';
+
+        return redirect()->back()->with('success', $message);
     }
 }

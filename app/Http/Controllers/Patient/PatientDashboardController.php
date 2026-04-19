@@ -84,10 +84,13 @@ class PatientDashboardController extends Controller
     public function medicalRecords()
     {
         $patient = Auth::user()->patient;
-        $records = \App\Models\MedicalRecord::where('patient_id', $patient->id)
+        $allRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
             ->with('doctor')
             ->orderBy('date', 'desc')
             ->get();
+        
+        // Group records by type
+        $records = $allRecords->groupBy('record_type');
         
         return view('patient.medical_records', [
             'records' => $records

@@ -5,7 +5,7 @@
 @section('content')
 
     @php
-        $categories = ['prescription' => 'Prescriptions', 'lab' => 'Lab Results', 'document' => 'Documents'];
+        $categories = ['prescription' => 'Prescriptions', 'lab_test' => 'Lab Results', 'document' => 'Documents'];
     @endphp
 
     <div class="space-y-8">
@@ -30,7 +30,7 @@
                                                             d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
                                                         </path>
                                                     </svg>
-                                                @elseif($type == 'lab')
+                                                @elseif($type == 'lab_test')
                                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                             d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
@@ -47,9 +47,14 @@
                                             <div>
                                                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                                     {{ $record->created_at->format('M d, Y') }}</p>
-                                                <p class="font-bold text-gray-800">Dr. {{ $record->doctor->last_name }}</p>
+                                                <p class="font-bold text-gray-800">Dr. {{ $record->doctor->first_name }} {{ $record->doctor->last_name }}</p>
                                             </div>
                                         </div>
+                                        @if($type == 'lab_test' && $record->status === 'pending')
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">Pending 🟡</span>
+                                        @elseif($type == 'lab_test' && $record->status === 'completed')
+                                            <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Completed ✓</span>
+                                        @endif
                                     </div>
 
                                     <div class="flex flex-col mb-2">
@@ -59,22 +64,16 @@
 
                                     <div x-show="open" class="mt-4 pt-4 border-t border-gray-200" style="display: none;" x-transition>
                                         <div class="mb-3">
-                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Diagnosis</h4>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{{ $type === 'prescription' ? 'Prescription' : ($type === 'lab_test' ? 'Test Name' : 'Title') }}</h4>
                                             <p class="text-sm text-gray-800 font-medium">{{ $record->diagnosis }}</p>
                                         </div>
                                         <div class="mb-3">
-                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Medications / Results</h4>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{{ $type === 'prescription' ? 'Medicines & Dosages' : ($type === 'lab_test' ? 'Test Details' : 'Guidelines') }}</h4>
                                             <p class="text-sm text-gray-800 whitespace-pre-line">{{ $record->medications_or_results }}</p>
                                         </div>
-                                        @if($record->clinical_details)
-                                            <div class="mb-3">
-                                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Clinical Details</h4>
-                                                <p class="text-sm text-gray-600">{{ $record->clinical_details }}</p>
-                                            </div>
-                                        @endif
-                                        @if($record->file_path)
+                                        @if($record->document_path)
                                             <div class="mt-4 pt-4 border-t border-gray-200">
-                                                <a href="{{ Storage::url($record->file_path) }}" target="_blank" @click.stop
+                                                <a href="{{ Storage::url($record->document_path) }}" target="_blank" @click.stop
                                                     class="text-teal-600 font-semibold text-sm hover:text-teal-800 flex items-center gap-1">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
