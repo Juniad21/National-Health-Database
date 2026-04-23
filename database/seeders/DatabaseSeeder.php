@@ -26,9 +26,15 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Generate Valid NIDs
+<<<<<<< HEAD
+        for ($i = 0; $i < 30; $i++) {
+            ValidNid::create([
+                'nid_number' => str_pad(1000 + $i, 10, '0', STR_PAD_LEFT)
+=======
         for ($i = 0; $i < 100; $i++) {
             ValidNid::create([
                 'nid_number' => str_pad((string) random_int(1000000000, 9999999999), 10, '0', STR_PAD_LEFT)
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
         }
         $validNids = ValidNid::pluck('nid_number')->toArray();
@@ -51,13 +57,26 @@ class DatabaseSeeder extends Seeder
             LabTestCatalog::create($test);
         }
 
+<<<<<<< HEAD
+        // 2. Create 10 Hospitals (Predictable Emails)
+=======
         // 2. Create 5 Hospitals (Predictable Emails)
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
         $hospitalData = [
             'Square Hospital' => 'info@square.com',
             'Evercare Hospital' => 'info@evercare.com',
             'United Hospital' => 'info@united.com',
             'Dhaka Medical College' => 'info@dmch.gov.bd',
+<<<<<<< HEAD
+            'Popular Diagnostic' => 'info@popular.com',
+            'Apollo Hospital' => 'info@apollo.com',
+            'Bangabandhu Sheikh Mujib Medical University' => 'info@bsmmu.edu.bd',
+            'Labaid Hospital' => 'info@labaid.com',
+            'Ibn Sina Hospital' => 'info@ibnsina.com',
+            'Medinova Hospital' => 'info@medinova.com'
+=======
             'Popular Diagnostic' => 'info@popular.com'
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
         ];
 
         $hospitals = [];
@@ -67,6 +86,10 @@ class DatabaseSeeder extends Seeder
                 'email' => $email,
                 'password' => Hash::make('12345678'),
                 'role' => 'hospital',
+<<<<<<< HEAD
+                'nid' => $validNids[$nidIndex++],
+=======
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
             $hospitals[] = Hospital::create([
                 'user_id' => $user->id,
@@ -97,7 +120,10 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Dr. Anamul Hasan', 'specialty' => 'Neurology', 'email' => 'dr.anamul@evercare.com'],
             ['name' => 'Dr. Nusrat Jahan', 'specialty' => 'Internal Medicine', 'email' => 'dr.nusrat@united.com'],
             ['name' => 'Dr. Mahmudul Hasan', 'specialty' => 'Orthopedics', 'email' => 'dr.mahmudul@dmch.gov.bd'],
+<<<<<<< HEAD
+=======
             ['name' => 'Dr. Zeba Fariha', 'specialty' => 'Pediatrics', 'email' => 'dr.zeba@popular.com'],
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
         ];
 
         $doctors = [];
@@ -106,11 +132,19 @@ class DatabaseSeeder extends Seeder
                 'email' => $data['email'],
                 'password' => Hash::make('12345678'),
                 'role' => 'doctor',
+<<<<<<< HEAD
+                'nid' => $validNids[$nidIndex++],
+=======
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
             $nameParts = explode(' ', str_replace('Dr. ', '', $data['name']), 2);
             $doctors[] = Doctor::create([
                 'user_id' => $user->id,
+<<<<<<< HEAD
+                'hospital_id' => $hospitals[$index % 10]->id,
+=======
                 'hospital_id' => $hospitals[$index % 5]->id,
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
                 'bmdc_number' => 'BMDC-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
                 'first_name' => $nameParts[0],
                 'last_name' => $nameParts[1] ?? '',
@@ -131,20 +165,35 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Nusrat Jahan', 'email' => 'nusrat.jahan@patient.com', 'gender' => 'female', 'blood' => 'A-'],
             ['name' => 'Arif Hossain', 'email' => 'arif.hossain@patient.com', 'gender' => 'male', 'blood' => 'O+'],
             ['name' => 'Meherun Nesa', 'email' => 'meherun.nesa@patient.com', 'gender' => 'female', 'blood' => 'AB-'],
+<<<<<<< HEAD
+=======
             ['name' => 'Habibullah', 'email' => 'habibullah@patient.com', 'gender' => 'male', 'blood' => 'B+']
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
         ];
 
         $patients = [];
         foreach ($patientData as $index => $data) {
+<<<<<<< HEAD
+            $nid = $validNids[$nidIndex++];
+=======
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             $user = User::create([
                 'email' => $data['email'],
                 'password' => Hash::make('12345678'),
                 'role' => 'patient',
+<<<<<<< HEAD
+                'nid' => $nid,
+=======
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
             $nameParts = explode(' ', $data['name'], 2);
             $patients[] = Patient::create([
                 'user_id' => $user->id,
+<<<<<<< HEAD
+                'nid' => $nid,
+=======
                 'nid' => $validNids[$nidIndex++],
+>>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
                 'first_name' => $nameParts[0],
                 'last_name' => $nameParts[1] ?? '',
                 'date_of_birth' => Carbon::now()->subYears(30 + $index)->format('Y-m-d'),
