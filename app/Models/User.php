@@ -15,6 +15,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'nid', // Kept your NID field
     ];
 
     protected $hidden = [
@@ -26,7 +27,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password' => 'hashed', // This is vital for login to work!
         ];
     }
 
