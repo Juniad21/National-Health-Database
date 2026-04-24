@@ -17,9 +17,22 @@ class HospitalDashboardController extends Controller
             ->with('patient')
             ->orderBy('created_at', 'desc')
             ->get();
+            
+        $resources = \App\Models\HospitalResource::where('hospital_id', $hospital->id)->get();
+        
+        // 👉 ADDED THIS: Fetch the pending lab orders for this hospital
+        // I added with('labTestCatalog') because your blade file is trying to load the test_name!
+        $pendingLabs = \App\Models\LabOrder::where('hospital_id', $hospital->id)
+            ->where('status', 'pending') // Assuming your default status is 'pending'
+            ->with('labTestCatalog')
+            ->orderBy('created_at', 'asc') 
+            ->get();
         
         return view('hospital.dashboard', [
-            'emergencies' => $emergencies
+            'hospital' => $hospital,
+            'emergencies' => $emergencies,
+            'resources' => $resources,
+            'pendingLabs' => $pendingLabs // 👉 UPDATED THIS: Pass the variable to the view
         ]);
     }
 
