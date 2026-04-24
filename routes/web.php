@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Patient\PatientDashboardController;
 use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Hospital\HospitalDashboardController;
+use App\Http\Controllers\Hospital\HospitalAuditLogController;
+use App\Http\Controllers\Hospital\HospitalBillingController;
 
 // 1. Redirect Home to Login
 Route::get('/', function () {
@@ -54,10 +56,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Hospital Routes
     Route::get('/hospital/dashboard', [HospitalDashboardController::class, 'index'])->name('hospital.dashboard');
+    Route::get('/hospital/logs', [HospitalAuditLogController::class, 'index'])->name('hospital.logs');
     Route::post('/hospital/lab-orders/{id}/complete', [HospitalDashboardController::class, 'completeLabOrder'])->name('hospital.lab_orders.complete');
     Route::post('/hospital/resources/{id}/update', [HospitalDashboardController::class, 'updateResource'])->name('hospital.resources.update');
     Route::post('/hospital/emergencies/{id}/dispatch', [HospitalDashboardController::class, 'dispatchAmbulance'])->name('hospital.emergencies.dispatch');
     Route::post('/hospital/emergencies/{id}/resolve', [HospitalDashboardController::class, 'resolveEmergency'])->name('hospital.emergencies.resolve');
+
+    // Hospital Billing Routes
+    Route::get('/hospital/billing', [HospitalBillingController::class, 'index'])->name('hospital.billing.index');
+    Route::get('/hospital/billing/create', [HospitalBillingController::class, 'create'])->name('hospital.billing.create');
+    Route::post('/hospital/billing', [HospitalBillingController::class, 'store'])->name('hospital.billing.store');
+    Route::post('/hospital/billing/{id}/payment', [HospitalBillingController::class, 'updatePayment'])->name('hospital.billing.payment.update');
+    Route::get('/hospital/billing/claims', [HospitalBillingController::class, 'claims'])->name('hospital.billing.claims');
+    Route::post('/hospital/billing/{bill_id}/claim', [HospitalBillingController::class, 'submitClaim'])->name('hospital.billing.claim.submit');
+    Route::post('/hospital/billing/claims/{id}/status', [HospitalBillingController::class, 'updateClaimStatus'])->name('hospital.billing.claim.status.update');
 });
 
 Route::middleware('auth')->group(function () {
