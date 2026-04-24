@@ -6,14 +6,25 @@ use App\Http\Controllers\Patient\PatientDashboardController;
 use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Hospital\HospitalDashboardController;
 
+// 1. Redirect Home to Login
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
-Route::get('/dashboard', [PatientDashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+// 2. Smart Role-Based Dashboard
+Route::get('/dashboard', function () {
+    $role = auth()->user()->role;
 
+    if ($role === 'doctor') {
+        return redirect()->route('doctor.dashboard');
+    } elseif ($role === 'hospital') {
+        return redirect()->route('hospital.dashboard');
+    }
+
+    return redirect()->route('patient.dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+// 3. Authenticated Routes Group
 Route::middleware(['auth', 'verified'])->group(function () {
     // Patient Routes
     Route::get('/patient/dashboard', [PatientDashboardController::class, 'index'])->name('patient.dashboard');
