@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hospital;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AuditLogService;
 
 class HospitalDashboardController extends Controller
 {
@@ -17,9 +18,20 @@ class HospitalDashboardController extends Controller
             ->with('patient')
             ->orderBy('created_at', 'desc')
             ->get();
+            
+        $resources = \App\Models\HospitalResource::where('hospital_id', $hospital->id)->get();
+        
+        $pendingLabs = \App\Models\LabOrder::where('hospital_id', $hospital->id)
+            ->where('status', 'pending')
+            ->with(['patient', 'doctor', 'labTestCatalog'])
+            ->get();
+        
+        AuditLogService::logHospitalAction('hospital dashboard viewed');
         
         return view('hospital.dashboard', [
-            'emergencies' => $emergencies
+            'emergencies' => $emergencies,
+            'resources' => $resources,
+            'pendingLabs' => $pendingLabs
         ]);
     }
 
@@ -33,13 +45,15 @@ class HospitalDashboardController extends Controller
         }
 
         $validated = $request->validate([
-            'results' => 'required|string',
+            'result_summary' => 'required|string',
         ]);
 
         $labOrder->update([
             'status' => 'completed',
-            'results' => $validated['results'],
+            'result_summary' => $validated['result_summary'],
         ]);
+
+        AuditLogService::logHospitalAction('lab result uploaded', "Uploaded result for lab order #{$id}", \App\Models\LabOrder::class, $id);
 
         return redirect()->back()->with('success', 'Lab order marked as completed!');
     }
@@ -54,14 +68,22 @@ class HospitalDashboardController extends Controller
         }
 
         $validated = $request->validate([
-            'currently_in_use' => 'required|integer|min:0',
+            'action' => 'required|in:increment,decrement',
         ]);
 
-        $resource->update([
-            'currently_in_use' => $validated['currently_in_use'],
-        ]);
+        if ($validated['action'] === 'increment') {
+            $resource->increment('currently_in_use');
+            $actionWord = 'incremented';
+        } elseif ($validated['action'] === 'decrement' && $resource->currently_in_use > 0) {
+            $resource->decrement('currently_in_use');
+            $actionWord = 'decremented';
+        } else {
+            $actionWord = 'attempted to update';
+        }
 
-        return redirect()->back()->with('success', 'Resource updated successfully!');
+        AuditLogService::logHospitalAction('hospital resource updated', ucfirst($actionWord) . " resource {$resource->resource_type}", \App\Models\HospitalResource::class, $id);
+
+        return response()->json(['success' => true]);
     }
 
     public function dispatchAmbulance(Request $request, $id)
@@ -74,6 +96,8 @@ class HospitalDashboardController extends Controller
         }
 
         $emergency->update(['status' => 'dispatched']);
+
+        AuditLogService::logHospitalAction('emergency status updated', "Dispatched ambulance for emergency #{$id}", \App\Models\Emergency::class, $id);
 
         return redirect()->back()->with('success', 'Ambulance dispatched!');
     }
@@ -88,6 +112,8 @@ class HospitalDashboardController extends Controller
         }
 
         $emergency->update(['status' => 'resolved']);
+
+        AuditLogService::logHospitalAction('emergency status updated', "Resolved emergency #{$id}", \App\Models\Emergency::class, $id);
 
         return redirect()->back()->with('success', 'Emergency resolved!');
     }
