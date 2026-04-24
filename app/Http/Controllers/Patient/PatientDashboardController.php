@@ -227,7 +227,9 @@ class PatientDashboardController extends Controller
 
         \App\Models\DoctorEvaluation::create([
             'appointment_id' => $validated['appointment_id'],
-            'rating' => $validated['rating'],
+            'doctor_id' => $appointment->doctor_id,
+            'patient_id' => $appointment->patient_id,
+            'rating_1_to_5' => $validated['rating'],
             'feedback_text' => $validated['feedback_text'],
         ]);
 
