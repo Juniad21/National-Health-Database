@@ -9,6 +9,16 @@ use Illuminate\Support\Str;
 
 class PatientDashboardController extends Controller
 {
+    protected array $symptomSpecialties = [
+        'Neurology' => ['headache', 'migraine', 'dizzy'],
+        'General Medicine' => ['fever', 'cough', 'cold', 'flu'],
+        'Orthopedics' => ['leg pain', 'arm pain', 'bone', 'joint'],
+        'Cardiology' => ['chest pain', 'heart', 'breath'],
+        'Gastroenterology' => ['stomach', 'digestion', 'vomit'],
+        'Endocrinology' => ['diabetes', 'sugar', 'thyroid'],
+        'Dermatology' => ['skin', 'rash', 'itch'],
+    ];
+
     public function index()
     {
         $patient = Auth::user()->patient;
@@ -131,23 +141,32 @@ class PatientDashboardController extends Controller
     public function symptomAssessment(Request $request)
     {
         $patient = Auth::user()->patient;
+        $suggestedSpecialty = null;
 
         if ($request->isMethod('post')) {
             $validated = $request->validate([
-                'symptoms' => 'required|string',
+                'description' => 'required|string',
                 'severity' => 'required|in:mild,moderate,severe',
             ]);
 
-            // Store symptom assessment (you may need to create a model for this)
-            \App\Models\MedicalRecord::create([
-                'patient_id' => $patient->id,
-                'record_type' => 'assessment',
-                'diagnosis' => $validated['symptoms'],
-                'medications_or_results' => 'Severity: ' . $validated['severity'],
-                'date' => now(),
-            ]);
+            $description = strtolower($validated['description']);
 
-            return redirect()->back()->with('success', 'Symptom assessment submitted!');
+            foreach ($this->symptomSpecialties as $specialty => $keywords) {
+                foreach ($keywords as $keyword) {
+                    if (str_contains($description, $keyword)) {
+                        $suggestedSpecialty = $specialty;
+                        break 2;
+                    }
+                }
+            }
+
+            if (! $suggestedSpecialty) {
+                $suggestedSpecialty = 'General Medicine';
+            }
+
+            return view('patient.symptoms', [
+                'suggestedSpecialty' => $suggestedSpecialty,
+            ])->with('success', 'Symptom assessment submitted!');
         }
 
         return view('patient.symptoms');
