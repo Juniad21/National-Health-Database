@@ -50,15 +50,20 @@ class DoctorDashboardController extends Controller
         $doctor = Auth::user()->doctor;
 
         $medicalRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
+            ->with('doctor')
             ->orderBy('date', 'desc')
             ->get();
 
         // Group records by type for display
         $records = $medicalRecords->groupBy('record_type');
 
+        // Fetch lab tests for the consultation form
+        $labTests = \App\Models\LabTestCatalog::orderBy('test_name', 'asc')->get();
+
         return view('doctor.patient_view', [
             'patient' => $patient,
-            'records' => $records
+            'records' => $records,
+            'labTests' => $labTests,
         ]);
     }
 
@@ -182,13 +187,12 @@ class DoctorDashboardController extends Controller
 
         // Set called_at so the patient sees a "Doctor has called you!" notification
         $appointment->update([
-            'status'    => 'completed',
             'called_at' => now(),
         ]);
 
-        // Redirect to consultation page so doctor can prescribe immediately
-        return redirect()->route('doctor.consultation', $appointment->patient_id)
-            ->with('success', 'Patient called! Please complete the consultation below.');
+        // Redirect to patient profile so doctor can consult immediately in the new tab
+        return redirect()->route('doctor.patient.view', $appointment->patient_id)
+            ->with('success', 'Patient called! Please complete the consultation in the "Live Consultation" tab.');
     }
 
     public function approveAppointment(Request $request, $appointment_id)
