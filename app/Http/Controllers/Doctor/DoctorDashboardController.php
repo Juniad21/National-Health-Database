@@ -100,11 +100,14 @@ class DoctorDashboardController extends Controller
     public function storeConsultation(Request $request, $patient_id)
     {
         $validated = $request->validate([
-            'diagnosis'           => 'required|string',
-            'medications'         => 'nullable|array',
-            'medications.*.name'  => 'required_with:medications|string',
-            'lab_test_ids'        => 'nullable|array',
-            'lab_test_ids.*'      => 'exists:lab_test_catalogs,id',
+            'diagnosis'             => 'required|string',
+            'medications'           => 'nullable|array',
+            'medications.*.name'    => 'required|string',
+            'medications.*.dosage'  => 'required|string',
+            'medications.*.duration' => 'required|string',
+            'medications.*.instructions' => 'required|string',
+            'lab_test_ids'          => 'nullable|array',
+            'lab_test_ids.*'        => 'exists:lab_test_catalogs,id',
         ]);
 
         $patient = \App\Models\Patient::findOrFail($patient_id);
