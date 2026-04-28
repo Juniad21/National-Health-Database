@@ -211,7 +211,6 @@
                                 <th class="pb-3 text-sm font-semibold text-gray-500">Doctor</th>
                                 <th class="pb-3 text-sm font-semibold text-gray-500">Hospital</th>
                                 <th class="pb-3 text-sm font-semibold text-gray-500">Status</th>
-                                <th class="pb-3 text-sm font-semibold text-gray-500">Token</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -235,23 +234,13 @@
                                     </td>
                                     <td class="py-4 text-sm text-gray-700 font-medium">{{ $app->hospital->name }}</td>
                                     <td class="py-4">
-                                        @php $s = strtolower($app->status); @endphp
-                                        @if($s === 'pending')
-                                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">Pending Approval</span>
-                                        @elseif($s === 'approved')
+                                        @if(strtolower($app->status) === 'pending')
+                                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">Pending</span>
+                                        @elseif(strtolower($app->status) === 'approved' || strtolower($app->status) === 'confirmed')
                                             <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Approved</span>
-                                        @elseif($s === 'completed')
-                                            @if($app->called_at && \Carbon\Carbon::parse($app->called_at)->isToday())
-                                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">✅ Visited Today</span>
-                                            @else
-                                                <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">Completed</span>
-                                            @endif
                                         @else
                                             <span class="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-bold rounded-full">{{ ucfirst($app->status) }}</span>
                                         @endif
-                                    </td>
-                                    <td class="py-4 text-sm font-bold text-gray-700">
-                                        {{ $app->token_number ?? '—' }}
                                     </td>
                                 </tr>
                             @endforeach

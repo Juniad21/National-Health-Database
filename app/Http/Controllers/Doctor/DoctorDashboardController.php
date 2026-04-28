@@ -15,7 +15,9 @@ class DoctorDashboardController extends Controller
         $search = $request->query('search', '');
 
         $pendingApprovals = \App\Models\Appointment::where('doctor_id', $doctor->id)
-            ->where('status', 'pending')
+            ->where(function($q) {
+                $q->where('status', 'pending')->orWhere('status', 'Pending');
+            })
             ->with(['patient', 'hospital'])
             ->orderBy('date', 'asc')
             ->get();
@@ -153,7 +155,9 @@ class DoctorDashboardController extends Controller
         // Mark appointment as completed and set called_at to notify patient
         $appointment = \App\Models\Appointment::where('patient_id', $patient->id)
             ->where('doctor_id', $doctor->id)
-            ->where('status', 'approved')
+            ->where(function($q) {
+                $q->where('status', 'approved')->orWhere('status', 'Approved');
+            })
             ->latest()
             ->first();
 
