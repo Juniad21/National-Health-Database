@@ -1,235 +1,208 @@
 @extends('layouts.doctor')
 
-@section('header_title', 'Patient Profile')
+@section('header_title', 'Patient Profile & Consultation')
 
 @section('content')
     <div class="space-y-6">
         <div class="flex items-center justify-between">
             <a href="{{ route('doctor.dashboard') }}" class="text-gray-500 hover:text-gray-700 flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
-                    </path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
                 Back to Dashboard
             </a>
-            <a href="{{ route('doctor.consultation', $patient->id) }}"
-                class="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-sm transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                New Consultation
-            </a>
+            <div class="flex gap-2">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                    Patient Profile
+                </span>
+            </div>
         </div>
 
+        @if (session('success'))
+            <div class="p-4 bg-green-50 border border-green-200 rounded-2xl text-green-800 font-semibold flex items-center gap-3">
+                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                {{ session('success') }}
+            </div>
+        @endif
+
         <!-- Patient Info Card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-start gap-6">
-            <div
-                class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-2xl font-bold border-4 border-white shadow-md">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-2xl font-black border-4 border-white shadow-md flex-shrink-0">
                 {{ substr($patient->first_name, 0, 1) }}{{ substr($patient->last_name, 0, 1) }}
             </div>
             <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
-                    <h2 class="text-2xl font-bold text-gray-800">{{ $patient->first_name }} {{ $patient->last_name }}</h2>
-                    <span
-                        class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200">{{ $patient->blood_group }}</span>
+                    <h2 class="text-2xl font-black text-gray-800">{{ $patient->first_name }} {{ $patient->last_name }}</h2>
+                    <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200">{{ $patient->blood_group }}</span>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4">
-                    <div><span class="block text-gray-500 text-xs uppercase tracking-wider">NID</span><span
-                            class="font-medium">{{ $patient->nid }}</span></div>
-                    <div><span class="block text-gray-500 text-xs uppercase tracking-wider">Age/DOB</span><span
-                            class="font-medium">{{ \Carbon\Carbon::parse($patient->date_of_birth)->age }} yrs
-                            ({{ $patient->date_of_birth }})</span></div>
-                    <div><span class="block text-gray-500 text-xs uppercase tracking-wider">Gender</span><span
-                            class="font-medium capitalize">{{ $patient->gender }}</span></div>
-                    <div><span class="block text-gray-500 text-xs uppercase tracking-wider">Contact</span><span
-                            class="font-medium">{{ $patient->phone }}</span></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 text-sm mt-3">
+                    <div><span class="block text-gray-400 text-[10px] uppercase font-bold tracking-widest">NID</span><span class="font-bold text-gray-700">{{ $patient->nid }}</span></div>
+                    <div><span class="block text-gray-400 text-[10px] uppercase font-bold tracking-widest">Age</span><span class="font-bold text-gray-700">{{ \Carbon\Carbon::parse($patient->date_of_birth)->age }} Years</span></div>
+                    <div><span class="block text-gray-400 text-[10px] uppercase font-bold tracking-widest">Gender</span><span class="font-bold text-gray-700 capitalize">{{ $patient->gender }}</span></div>
+                    <div><span class="block text-gray-400 text-[10px] uppercase font-bold tracking-widest">Contact</span><span class="font-bold text-gray-700">{{ $patient->phone }}</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- Add Medical Record Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                <h3 class="font-bold text-gray-800 text-lg">Add Medical Record</h3>
-                <p class="text-sm text-gray-500 mt-1">Add prescriptions, lab tests, or guidelines for this patient</p>
-            </div>
-            
-            <!-- Tabs -->
-            <div class="flex border-b border-gray-200" role="tablist">
-                <button class="tab-button active px-6 py-4 font-medium text-gray-700 border-b-2 border-blue-500 hover:text-blue-600 transition-colors" data-tab="prescription">
-                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Prescription
-                </button>
-                <button class="tab-button px-6 py-4 font-medium text-gray-700 hover:text-blue-600 transition-colors" data-tab="lab_test">
-                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    Lab Test
-                </button>
-                <button class="tab-button px-6 py-4 font-medium text-gray-700 hover:text-blue-600 transition-colors" data-tab="document">
-                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
-                    Guidelines
-                </button>
+        <!-- Consultation & Record Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" x-data="{ activeTab: 'live_consultation' }">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center">
+                <h3 class="font-black text-gray-800 text-lg">Medical Actions</h3>
+                <div class="flex bg-gray-200/50 p-1 rounded-xl">
+                    <button @click="activeTab = 'live_consultation'" :class="activeTab === 'live_consultation' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all">
+                        Live Consultation
+                    </button>
+                    <button @click="activeTab = 'guidelines'" :class="activeTab === 'guidelines' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all ml-1">
+                        General Guidelines
+                    </button>
+                </div>
             </div>
 
-            <!-- Tab Content -->
             <div class="p-6">
-                @if ($errors->any())
-                    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-                        <ul class="text-sm text-red-700">
-                            @foreach ($errors->all() as $error)
-                                <li>• {{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                @if (session('success'))
-                    <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
-                        <p class="text-sm text-green-700">{{ session('success') }}</p>
-                    </div>
-                @endif
-
-                <!-- Prescription Tab -->
-                <div id="prescription" class="tab-content">
-                    <form action="{{ route('doctor.medical_record.store', $patient->id) }}" method="POST" class="space-y-4">
+                <!-- LIVE CONSULTATION TAB -->
+                <div x-show="activeTab === 'live_consultation'">
+                    <form action="{{ route('doctor.consultation.store', $patient->id) }}" method="POST">
                         @csrf
-                        <input type="hidden" name="type" value="prescription">
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prescription Title</label>
-                            <input type="text" name="title" placeholder="e.g., Pain Relief" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medicines & Dosages</label>
-                            <textarea name="notes" rows="5" placeholder="Enter medicines with dosages&#10;e.g., Aspirin 500mg - 2 tablets twice daily&#10;Ibuprofen 200mg - 1 tablet thrice daily" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- Left: Diagnosis & Lab -->
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Primary Diagnosis <span class="text-red-500">*</span></label>
+                                    <input type="text" name="diagnosis" required placeholder="e.g. Chronic Hypertension" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50">
+                                </div>
+                                
+                                <div x-data="{ 
+                                    search: '', 
+                                    selected: [], 
+                                    tests: {{ json_encode($labTests->map(fn($t) => ['id' => $t->id, 'name' => $t->test_name])) }} 
+                                }">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Assign Lab Tests</label>
+                                    <select x-on:change="
+                                        let selectedId = parseInt($event.target.value);
+                                        let test = tests.find(t => t.id === selectedId);
+                                        if(test && !selected.find(t => t.id === test.id)) {
+                                            selected.push(test);
+                                        }
+                                        $event.target.value = '';
+                                    " class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm">
+                                        <option value="">+ Add a Lab Test...</option>
+                                        @foreach($labTests as $test)
+                                            <option value="{{ $test->id }}">{{ $test->test_name }}</option>
+                                        @endforeach
+                                    </select>
+
+                                    <div class="mt-3 flex flex-wrap gap-2" x-show="selected.length > 0">
+                                        <template x-for="s in selected" :key="s.id">
+                                            <div class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 text-xs font-bold">
+                                                <span x-text="s.name"></span>
+                                                <input type="hidden" name="lab_test_ids[]" :value="s.id">
+                                                <button type="button" @click="selected = selected.filter(t => t.id !== s.id)" class="text-blue-400 hover:text-red-500">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 mt-2 italic">Tests will be conducted at: {{ Auth::user()->doctor->hospital->name ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Right: Medication Builder -->
+                            <div x-data="{ 
+                                meds: [{ id: Date.now(), name: '', dosage: '', duration: '', instructions: '' }],
+                                addMed() { this.meds.push({ id: Date.now(), name: '', dosage: '', duration: '', instructions: '' }); },
+                                removeMed(id) { this.meds = this.meds.filter(m => m.id !== id); }
+                            }">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-sm font-bold text-gray-700">Prescription Builder</label>
+                                    <button type="button" @click="addMed()" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        Add Medicine
+                                    </button>
+                                </div>
+
+                                <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                    <template x-for="(med, index) in meds" :key="med.id">
+                                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl relative group">
+                                            <button type="button" @click="removeMed(med.id)" class="absolute -top-2 -right-2 bg-red-100 text-red-600 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                            <div class="grid grid-cols-1 gap-3">
+                                                <input type="text" x-model="med.name" :name="'medications['+index+'][name]'" required placeholder="Medicine Name" class="w-full text-xs rounded-lg border-gray-200">
+                                                <div class="grid grid-cols-3 gap-2">
+                                                    <input type="text" x-model="med.dosage" :name="'medications['+index+'][dosage]'" required placeholder="Dosage (1-0-1)" class="text-[10px] rounded-lg border-gray-200">
+                                                    <input type="text" x-model="med.duration" :name="'medications['+index+'][duration]'" required placeholder="Duration (7 Days)" class="text-[10px] rounded-lg border-gray-200">
+                                                    <input type="text" x-model="med.instructions" :name="'medications['+index+'][instructions]'" required placeholder="Instructions" class="text-[10px] rounded-lg border-gray-200">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
 
-                        <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                            Save Prescription
-                        </button>
+                        <div class="mt-8 flex justify-end">
+                            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform hover:-translate-y-0.5">
+                                ✓ Save & Finish Consultation
+                            </button>
+                        </div>
                     </form>
                 </div>
 
-                <!-- Lab Test Tab -->
-                <div id="lab_test" class="tab-content hidden">
-                    <form action="{{ route('doctor.medical_record.store', $patient->id) }}" method="POST" class="space-y-4">
-                        @csrf
-                        <input type="hidden" name="type" value="lab_test">
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Lab Test Name</label>
-                            <input type="text" name="title" placeholder="e.g., Complete Blood Count (CBC)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Test Details/Instructions</label>
-                            <textarea name="notes" rows="4" placeholder="Enter test requirements or special instructions" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                        </div>
-
-                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p class="text-sm text-blue-800">
-                                <span class="font-semibold">📍 Hospital:</span> This test will be sent to <span class="font-bold text-blue-600">{{ Auth::user()->doctor->hospital->name ?? 'N/A' }}</span>
-                            </p>
-                        </div>
-
-                        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p class="text-sm text-yellow-800">
-                                <span class="font-semibold">⏳ Status:</span> Lab tests will be marked as <span class="font-bold text-yellow-600">Pending 🟡</span> until {{ Auth::user()->doctor->hospital->name ?? 'the hospital' }} completes and uploads the results.
-                            </p>
-                        </div>
-
-                        <button type="submit" class="w-full px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors">
-                            Request Lab Test
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Document/Guidelines Tab -->
-                <div id="document" class="tab-content hidden">
+                <!-- GUIDELINES TAB -->
+                <div x-show="activeTab === 'guidelines'" x-cloak>
                     <form action="{{ route('doctor.medical_record.store', $patient->id) }}" method="POST" class="space-y-4">
                         @csrf
                         <input type="hidden" name="type" value="document">
-                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Guidelines Title</label>
-                            <input type="text" name="title" placeholder="e.g., Post-Surgery Care Instructions" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Subject</label>
+                            <input type="text" name="title" required placeholder="e.g. Post-Surgery Care" class="w-full rounded-xl border-gray-200 bg-gray-50">
                         </div>
-                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Guidelines & Advice</label>
-                            <textarea name="notes" rows="5" placeholder="Enter doctor's advice and guidelines for the patient" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Instructions</label>
+                            <textarea name="notes" rows="4" required placeholder="Enter detailed guidelines..." class="w-full rounded-xl border-gray-200 bg-gray-50"></textarea>
                         </div>
-
-                        <button type="submit" class="w-full px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors">
-                            Add Guidelines
-                        </button>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-teal-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-700 transition-colors">
+                                Add Guidelines
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
 
         <!-- Medical History Timeline -->
-        <h3 class="font-bold text-gray-800 text-lg mt-8 mb-4">Medical History</h3>
+        <h3 class="font-black text-gray-800 text-lg mt-10 mb-4">Patient Medical History</h3>
 
         @if($records->isEmpty())
-            <div class="text-center py-12 bg-white rounded-2xl border border-gray-200 border-dashed">
-                <p class="text-gray-500">No medical history available for this patient.</p>
+            <div class="text-center py-12 bg-white rounded-3xl border border-gray-200 border-dashed">
+                <p class="text-gray-400 font-medium">No prior records found for this patient.</p>
             </div>
         @else
             <div class="space-y-6">
                 @foreach($records as $type => $group)
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2 bg-gray-50/50">
-                            @if($type === 'prescription')
-                                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                <h4 class="font-semibold text-gray-700 capitalize">Prescriptions & Consultations</h4>
-                            @elseif($type === 'lab_test')
-                                <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                                <h4 class="font-semibold text-gray-700 capitalize">Laboratory Tests</h4>
-                            @elseif($type === 'document')
-                                <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-                                <h4 class="font-semibold text-gray-700 capitalize">Guidelines & Documents</h4>
-                            @else
-                                <span class="w-2 h-2 rounded-full bg-gray-500"></span>
-                                <h4 class="font-semibold text-gray-700 capitalize">{{ str_replace('_', ' ', $type) }}</h4>
-                            @endif
+                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/20">
+                            <h4 class="font-black text-gray-700 uppercase tracking-widest text-xs">
+                                {{ $type === 'prescription' ? 'Prescriptions' : ($type === 'lab' ? 'Lab Reports' : str_replace('_', ' ', $type)) }}
+                            </h4>
                         </div>
                         <div class="divide-y divide-gray-50">
                             @foreach($group as $record)
-                                <div class="p-6">
-                                    <div class="flex justify-between items-start mb-2">
+                                <div class="p-6 hover:bg-gray-50/50 transition-colors">
+                                    <div class="flex justify-between items-start mb-4">
                                         <div>
-                                            <h5 class="font-bold text-gray-800">{{ $record->diagnosis }}</h5>
-                                            @if($type === 'lab_test')
-                                                <div class="mt-2 flex items-center gap-2">
-                                                    @if($record->status === 'pending')
-                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold border border-yellow-300">
-                                                            <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
-                                                            Pending 🟡
-                                                        </span>
-                                                    @else
-                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold border border-green-300">
-                                                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                                                            Completed ✓
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            @endif
+                                            <h5 class="font-bold text-gray-800 text-lg">{{ $record->diagnosis }}</h5>
+                                            <p class="text-xs text-gray-400 font-medium mt-1">Recorded by Dr. {{ $record->doctor->first_name }} {{ $record->doctor->last_name }}</p>
                                         </div>
-                                        <span
-                                            class="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">{{ \Carbon\Carbon::parse($record->date)->format('M d, Y') }}</span>
+                                        <span class="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded-md">{{ \Carbon\Carbon::parse($record->date)->format('M d, Y') }}</span>
                                     </div>
-                                    <div class="bg-gray-50 p-4 rounded-xl text-sm text-gray-700 mt-3 border border-gray-100 whitespace-pre-line">
+                                    <div class="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 border border-gray-100 whitespace-pre-line font-medium leading-relaxed">
                                         {!! nl2br(e($record->medications_or_results)) !!}
                                     </div>
-                                    <p class="text-xs text-gray-400 mt-3 font-medium">Recorded by: Dr. {{ $record->doctor->first_name }}
-                                        {{ $record->doctor->last_name }}</p>
                                 </div>
                             @endforeach
                         </div>
@@ -239,30 +212,11 @@
         @endif
     </div>
 
-    <script>
-        // Tab switching functionality
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const tabName = this.getAttribute('data-tab');
-                
-                // Hide all tabs
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.add('hidden');
-                });
-                
-                // Remove active styling from all buttons
-                document.querySelectorAll('.tab-button').forEach(btn => {
-                    btn.classList.remove('border-b-2', 'border-blue-500', 'text-blue-600');
-                    btn.classList.add('text-gray-700');
-                });
-                
-                // Show selected tab
-                document.getElementById(tabName).classList.remove('hidden');
-                
-                // Add active styling to clicked button
-                this.classList.remove('text-gray-700');
-                this.classList.add('border-b-2', 'border-blue-500', 'text-blue-600');
-            });
-        });
-    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+    </style>
 @endsection
