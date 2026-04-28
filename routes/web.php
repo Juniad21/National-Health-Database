@@ -1,3 +1,4 @@
+```php
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -29,56 +30,69 @@ Route::get('/dashboard', function () {
 
 // 3. Authenticated Routes Group
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Patient Routes
-    Route::get('/patient/dashboard', [PatientDashboardController::class, 'index'])->name('patient.dashboard');
-    Route::get('/patient/scheduling', [PatientDashboardController::class, 'scheduling'])->name('patient.scheduling');
-    Route::post('/patient/scheduling', [PatientDashboardController::class, 'storeAppointment'])->name('patient.appointment.store');
-    Route::get('/patient/medical-records', [PatientDashboardController::class, 'medicalRecords'])->name('patient.medical_records');
-    Route::get('/patient/consents', [PatientDashboardController::class, 'consents'])->name('patient.consents');
-    Route::post('/patient/consents', [PatientDashboardController::class, 'updateConsent'])->name('patient.consent.update');
-    Route::match(['get', 'post'], '/patient/symptoms', [PatientDashboardController::class, 'symptomAssessment'])->name('patient.symptoms');
 
-    // New Feature Routes for Patient
-    Route::post('/patient/access-requests/{id}/approve', [PatientDashboardController::class, 'approveAccessRequest'])->name('patient.access_requests.approve');
-    Route::post('/patient/access-requests/{id}/reject', [PatientDashboardController::class, 'rejectAccessRequest'])->name('patient.access_requests.reject');
-    Route::post('/patient/vaccinations/{id}/mark-taken', [PatientDashboardController::class, 'markVaccineTaken'])->name('patient.vaccinations.mark_taken');
-    Route::post('/patient/emergency/trigger', [PatientDashboardController::class, 'triggerEmergency'])->name('patient.emergency.trigger');
-    Route::post('/patient/evaluation', [PatientDashboardController::class, 'storeEvaluation'])->name('patient.evaluation.store');
+    // ==========================================
+    // PATIENT ROUTES
+    // ==========================================
+    Route::prefix('patient')->name('patient.')->group(function () {
+        Route::get('/dashboard', [PatientDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/scheduling', [PatientDashboardController::class, 'scheduling'])->name('scheduling');
+        Route::post('/scheduling', [PatientDashboardController::class, 'storeAppointment'])->name('appointment.store');
+        Route::get('/medical-records', [PatientDashboardController::class, 'medicalRecords'])->name('medical_records');
+        Route::get('/consents', [PatientDashboardController::class, 'consents'])->name('consents');
+        Route::post('/consents', [PatientDashboardController::class, 'updateConsent'])->name('consent.update');
+        Route::match(['get', 'post'], '/symptoms', [PatientDashboardController::class, 'symptomAssessment'])->name('symptoms');
 
-    // Doctor Routes
-    Route::get('/doctor/dashboard', [DoctorDashboardController::class, 'index'])->name('doctor.dashboard');
-    Route::get('/doctor/patient/{id}', [DoctorDashboardController::class, 'viewPatient'])->name('doctor.patient.view');
-    Route::post('/doctor/patient/{id}/request-access', [DoctorDashboardController::class, 'requestAccess'])->name('doctor.patient.request_access');
-    Route::post('/doctor/patient/{patient_id}/medical-record', [DoctorDashboardController::class, 'storeMedicalRecord'])->name('doctor.medical_record.store');
-    Route::get('/doctor/consultation/{patient_id}', [DoctorDashboardController::class, 'consultation'])->name('doctor.consultation');
-    Route::post('/doctor/consultation/{patient_id}', [DoctorDashboardController::class, 'storeConsultation'])->name('doctor.consultation.store');
-    Route::post('/doctor/queue/{appointment_id}/visit', [DoctorDashboardController::class, 'markVisited'])->name('doctor.queue.visit');
-    Route::post('/doctor/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('doctor.appointment.approve');
+        Route::post('/access-requests/{id}/approve', [PatientDashboardController::class, 'approveAccessRequest'])->name('access_requests.approve');
+        Route::post('/access-requests/{id}/reject', [PatientDashboardController::class, 'rejectAccessRequest'])->name('access_requests.reject');
+        Route::post('/vaccinations/{id}/mark-taken', [PatientDashboardController::class, 'markVaccineTaken'])->name('vaccinations.mark_taken');
+        Route::post('/emergency/trigger', [PatientDashboardController::class, 'triggerEmergency'])->name('emergency.trigger');
+        Route::post('/evaluation', [PatientDashboardController::class, 'storeEvaluation'])->name('evaluation.store');
+    });
 
-    // Hospital Routes
-    Route::get('/hospital/dashboard', [HospitalDashboardController::class, 'index'])->name('hospital.dashboard');
-    Route::get('/hospital/logs', [HospitalAuditLogController::class, 'index'])->name('hospital.logs');
-    Route::post('/hospital/lab-orders/{id}/complete', [HospitalDashboardController::class, 'completeLabOrder'])->name('hospital.lab_orders.complete');
-    Route::post('/hospital/resources/{id}/update', [HospitalDashboardController::class, 'updateResource'])->name('hospital.resources.update');
-    Route::post('/hospital/emergencies/{id}/dispatch', [HospitalDashboardController::class, 'dispatchAmbulance'])->name('hospital.emergencies.dispatch');
-    Route::post('/hospital/emergencies/{id}/resolve', [HospitalDashboardController::class, 'resolveEmergency'])->name('hospital.emergencies.resolve');
+    // ==========================================
+    // DOCTOR ROUTES
+    // ==========================================
+    Route::prefix('doctor')->name('doctor.')->group(function () {
+        Route::get('/dashboard', [DoctorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/patient/{id}', [DoctorDashboardController::class, 'viewPatient'])->name('patient.view');
+        Route::post('/patient/{id}/request-access', [DoctorDashboardController::class, 'requestAccess'])->name('patient.request_access');
+        Route::post('/patient/{patient_id}/medical-record', [DoctorDashboardController::class, 'storeMedicalRecord'])->name('medical_record.store');
+        Route::get('/consultation/{patient_id}', [DoctorDashboardController::class, 'consultation'])->name('consultation');
+        Route::post('/consultation/{patient_id}', [DoctorDashboardController::class, 'storeConsultation'])->name('consultation.store');
+        Route::post('/queue/{appointment_id}/visit', [DoctorDashboardController::class, 'markVisited'])->name('queue.visit');
+        Route::post('/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('appointment.approve');
+    });
 
-    // Hospital Billing Routes
-    Route::get('/hospital/billing', [HospitalBillingController::class, 'index'])->name('hospital.billing.index');
-    Route::get('/hospital/billing/create', [HospitalBillingController::class, 'create'])->name('hospital.billing.create');
-    Route::post('/hospital/billing', [HospitalBillingController::class, 'store'])->name('hospital.billing.store');
-    Route::post('/hospital/billing/{id}/payment', [HospitalBillingController::class, 'updatePayment'])->name('hospital.billing.payment.update');
-    Route::get('/hospital/billing/claims', [HospitalBillingController::class, 'claims'])->name('hospital.billing.claims');
-    Route::post('/hospital/billing/{bill_id}/claim', [HospitalBillingController::class, 'submitClaim'])->name('hospital.billing.claim.submit');
-    Route::post('/hospital/billing/claims/{id}/status', [HospitalBillingController::class, 'updateClaimStatus'])->name('hospital.billing.claim.status.update');
+    // ==========================================
+    // HOSPITAL ROUTES
+    // ==========================================
+    Route::prefix('hospital')->name('hospital.')->group(function () {
+        Route::get('/dashboard', [HospitalDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/logs', [HospitalAuditLogController::class, 'index'])->name('logs');
 
-    // Route for identifying duplicate patient records
-    Route::get('/duplicates', [DuplicateRecordController::class, 'identifyDuplicates']);
+        Route::post('/lab-orders/{id}/complete', [HospitalDashboardController::class, 'completeLabOrder'])->name('lab_orders.complete');
+        Route::post('/resources/{id}/update', [HospitalDashboardController::class, 'updateResource'])->name('resources.update');
+        Route::post('/emergencies/{id}/dispatch', [HospitalDashboardController::class, 'dispatchAmbulance'])->name('emergencies.dispatch');
+        Route::post('/emergencies/{id}/resolve', [HospitalDashboardController::class, 'resolveEmergency'])->name('emergencies.resolve');
 
-    // Route for merging duplicate patient records
-    Route::post('/duplicates/merge', [DuplicateRecordController::class, 'mergeDuplicates']);
+        // Hospital Billing & Claims
+        Route::get('/billing', [HospitalBillingController::class, 'index'])->name('billing.index');
+        Route::get('/billing/create', [HospitalBillingController::class, 'create'])->name('billing.create');
+        Route::post('/billing', [HospitalBillingController::class, 'store'])->name('billing.store');
+        Route::post('/billing/{id}/payment', [HospitalBillingController::class, 'updatePayment'])->name('billing.payment.update');
+
+        Route::get('/billing/claims', [HospitalBillingController::class, 'claims'])->name('billing.claims');
+        Route::post('/billing/{bill_id}/claim', [HospitalBillingController::class, 'submitClaim'])->name('billing.claim.submit');
+        Route::post('/billing/claims/{id}/status', [HospitalBillingController::class, 'updateClaimStatus'])->name('billing.claim.status.update');
+
+        // Duplicate Records
+        Route::get('/duplicates', [DuplicateRecordController::class, 'identifyDuplicates'])->name('duplicates.index');
+        Route::post('/duplicates/merge', [DuplicateRecordController::class, 'mergeDuplicates'])->name('duplicates.merge');
+    });
 });
 
+// 4. Standard Profile Routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -86,3 +100,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
