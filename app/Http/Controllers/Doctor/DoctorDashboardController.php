@@ -15,7 +15,9 @@ class DoctorDashboardController extends Controller
         $search = $request->query('search', '');
 
         $pendingApprovals = \App\Models\Appointment::where('doctor_id', $doctor->id)
-            ->where('status', 'pending')
+            ->where(function($q) {
+                $q->where('status', 'pending')->orWhere('status', 'Pending');
+            })
             ->with(['patient', 'hospital'])
             ->orderBy('date', 'asc')
             ->get();
@@ -93,23 +95,80 @@ class DoctorDashboardController extends Controller
     public function storeConsultation(Request $request, $patient_id)
     {
         $validated = $request->validate([
-            'diagnosis' => 'required|string',
-            'medications_or_results' => 'required|string',
+            'diagnosis'           => 'required|string',
+            'medications'         => 'nullable|array',
+            'medications.*.name'  => 'required_with:medications|string',
+            'lab_test_ids'        => 'nullable|array',
+            'lab_test_ids.*'      => 'exists:lab_test_catalogs,id',
         ]);
 
         $patient = \App\Models\Patient::findOrFail($patient_id);
-        $doctor = Auth::user()->doctor;
+        $doctor  = Auth::user()->doctor;
+        $hospital = $doctor->hospital;
 
+        // Build prescription text from structured medication fields
+        $medsText = '';
+        if (!empty($validated['medications'])) {
+            foreach ($validated['medications'] as $i => $med) {
+                $medsText .= ($i + 1) . ". {$med['name']} — {$med['dosage']} | {$med['duration']} | {$med['instructions']}\n";
+            }
+        }
+
+        // Save prescription record
         \App\Models\MedicalRecord::create([
-            'patient_id' => $patient->id,
-            'doctor_id' => $doctor->id,
-            'record_type' => 'consultation',
-            'diagnosis' => $validated['diagnosis'],
-            'medications_or_results' => $validated['medications_or_results'],
-            'date' => now(),
+            'patient_id'              => $patient->id,
+            'doctor_id'               => $doctor->id,
+            'hospital_id'             => $hospital?->id,
+            'record_type'             => 'prescription',
+            'diagnosis'               => $validated['diagnosis'],
+            'medications_or_results'  => $medsText ?: 'No medications prescribed.',
+            'date'                    => now(),
         ]);
 
-        return redirect()->back()->with('success', 'Consultation notes saved!');
+        // Save each lab test as a LabOrder — always linked to the doctor's hospital
+        if (!empty($validated['lab_test_ids'])) {
+            foreach ($validated['lab_test_ids'] as $testId) {
+                \App\Models\LabOrder::create([
+                    'patient_id'          => $patient->id,
+                    'doctor_id'           => $doctor->id,
+                    'hospital_id'         => $hospital?->id,
+                    'lab_test_catalog_id' => $testId,
+                    'status'              => 'pending',
+                ]);
+            }
+
+            // Save a lab record in medical records so patient sees it
+            $labNames = \App\Models\LabTestCatalog::whereIn('id', $validated['lab_test_ids'])
+                ->pluck('test_name')->implode(', ');
+
+            \App\Models\MedicalRecord::create([
+                'patient_id'             => $patient->id,
+                'doctor_id'              => $doctor->id,
+                'hospital_id'            => $hospital?->id,
+                'record_type'            => 'lab',
+                'diagnosis'              => 'Lab Tests Ordered',
+                'medications_or_results' => "Tests: {$labNames}\nPlease attend: " . ($hospital?->name ?? 'your doctor\'s hospital') . "\nStatus: Pending",
+                'date'                   => now(),
+            ]);
+        }
+
+        // Mark appointment as completed and set called_at to notify patient
+        $appointment = \App\Models\Appointment::where('patient_id', $patient->id)
+            ->where('doctor_id', $doctor->id)
+            ->where(function($q) {
+                $q->where('status', 'approved')->orWhere('status', 'Approved');
+            })
+            ->latest()
+            ->first();
+
+        if ($appointment) {
+            $appointment->update([
+                'status'    => 'completed',
+                'called_at' => now(),
+            ]);
+        }
+
+        return redirect()->route('doctor.dashboard')->with('success', 'Consultation saved! Patient has been notified.');
     }
 
     public function markVisited(Request $request, $appointment_id)
@@ -121,9 +180,15 @@ class DoctorDashboardController extends Controller
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
-        $appointment->update(['status' => 'completed']);
+        // Set called_at so the patient sees a "Doctor has called you!" notification
+        $appointment->update([
+            'status'    => 'completed',
+            'called_at' => now(),
+        ]);
 
-        return redirect()->back()->with('success', 'Patient marked as visited!');
+        // Redirect to consultation page so doctor can prescribe immediately
+        return redirect()->route('doctor.consultation', $appointment->patient_id)
+            ->with('success', 'Patient called! Please complete the consultation below.');
     }
 
     public function approveAppointment(Request $request, $appointment_id)
