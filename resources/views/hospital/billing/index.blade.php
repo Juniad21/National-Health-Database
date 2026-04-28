@@ -12,7 +12,6 @@
         </a>
     </div>
 
-    <!-- Search & Filters -->
     <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
         <form action="{{ route('hospital.billing.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
             <div class="flex-1">
@@ -37,7 +36,6 @@
         </form>
     </div>
 
-    <!-- Bills List -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -56,8 +54,8 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="p-4 font-mono text-indigo-600 font-medium">{{ $bill->bill_number }}</td>
                         <td class="p-4">
-                            <div class="font-bold text-gray-800">{{ $bill->patient->first_name }} {{ $bill->patient->last_name }}</div>
-                            <div class="text-xs text-gray-500">NID: {{ $bill->patient->nid }}</div>
+                            <div class="font-bold text-gray-800">{{ $bill->patient?->first_name }} {{ $bill->patient?->last_name }}</div>
+                            <div class="text-xs text-gray-500">NID: {{ $bill->patient?->nid ?? 'N/A' }}</div>
                         </td>
                         <td class="p-4 text-gray-600">{{ \Carbon\Carbon::parse($bill->issued_date)->format('M d, Y') }}</td>
                         <td class="p-4 font-bold text-gray-800 text-right">${{ number_format($bill->total_amount, 2) }}</td>
@@ -75,16 +73,13 @@
                             <button @click="open = !open" class="text-gray-500 hover:text-indigo-600">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
-                            <!-- Dropdown Menu -->
                             <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20 border border-gray-100 overflow-hidden" style="display: none;">
-                                <!-- Form to update payment -->
                                 <form action="{{ route('hospital.billing.payment.update', $bill->id) }}" method="POST" class="p-3 bg-gray-50 border-b border-gray-100">
                                     @csrf
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Update Paid Amount</label>
                                     <input type="number" step="0.01" name="paid_amount" value="{{ $bill->paid_amount }}" class="w-full text-xs border-gray-300 rounded mb-2" required>
                                     <button type="submit" class="w-full bg-emerald-500 text-white text-xs font-bold py-1.5 rounded hover:bg-emerald-600">Save Payment</button>
                                 </form>
-                                <!-- Form to submit claim -->
                                 <form action="{{ route('hospital.billing.claim.submit', $bill->id) }}" method="POST" class="p-3">
                                     @csrf
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Submit Insurance Claim</label>

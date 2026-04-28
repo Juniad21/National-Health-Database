@@ -21,14 +21,17 @@ class HospitalDashboardController extends Controller
             
         $resources = \App\Models\HospitalResource::where('hospital_id', $hospital->id)->get();
         
+        // Combined the fixes: Eager loading multiple relationships AND ordering them
         $pendingLabs = \App\Models\LabOrder::where('hospital_id', $hospital->id)
             ->where('status', 'pending')
             ->with(['patient', 'doctor', 'labTestCatalog'])
+            ->orderBy('created_at', 'asc')
             ->get();
         
         AuditLogService::logHospitalAction('hospital dashboard viewed');
         
         return view('hospital.dashboard', [
+            'hospital' => $hospital,
             'emergencies' => $emergencies,
             'resources' => $resources,
             'pendingLabs' => $pendingLabs

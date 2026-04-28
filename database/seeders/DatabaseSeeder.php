@@ -25,16 +25,10 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // 1. Generate Valid NIDs
-<<<<<<< HEAD
-        for ($i = 0; $i < 30; $i++) {
-            ValidNid::create([
-                'nid_number' => str_pad(1000 + $i, 10, '0', STR_PAD_LEFT)
-=======
+        // 1. Generate 100 Valid NIDs
         for ($i = 0; $i < 100; $i++) {
             ValidNid::create([
                 'nid_number' => str_pad((string) random_int(1000000000, 9999999999), 10, '0', STR_PAD_LEFT)
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
         }
         $validNids = ValidNid::pluck('nid_number')->toArray();
@@ -57,26 +51,18 @@ class DatabaseSeeder extends Seeder
             LabTestCatalog::create($test);
         }
 
-<<<<<<< HEAD
         // 2. Create 10 Hospitals (Predictable Emails)
-=======
-        // 2. Create 5 Hospitals (Predictable Emails)
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
         $hospitalData = [
             'Square Hospital' => 'info@square.com',
             'Evercare Hospital' => 'info@evercare.com',
             'United Hospital' => 'info@united.com',
             'Dhaka Medical College' => 'info@dmch.gov.bd',
-<<<<<<< HEAD
             'Popular Diagnostic' => 'info@popular.com',
             'Apollo Hospital' => 'info@apollo.com',
             'Bangabandhu Sheikh Mujib Medical University' => 'info@bsmmu.edu.bd',
             'Labaid Hospital' => 'info@labaid.com',
             'Ibn Sina Hospital' => 'info@ibnsina.com',
             'Medinova Hospital' => 'info@medinova.com'
-=======
-            'Popular Diagnostic' => 'info@popular.com'
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
         ];
 
         $hospitals = [];
@@ -86,10 +72,7 @@ class DatabaseSeeder extends Seeder
                 'email' => $email,
                 'password' => Hash::make('12345678'),
                 'role' => 'hospital',
-<<<<<<< HEAD
                 'nid' => $validNids[$nidIndex++],
-=======
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
             $hospitals[] = Hospital::create([
                 'user_id' => $user->id,
@@ -108,22 +91,20 @@ class DatabaseSeeder extends Seeder
             HospitalResource::create(['hospital_id' => $hospital->id, 'resource_type' => 'Blood Bank', 'total_capacity' => 500, 'currently_in_use' => random_int(100, 400)]);
         }
 
-        // 3. Create 10 Doctors (Predictable Emails: dr.firstname@hospital.com)
+        // 3. Create 10 Doctors
+        // hospital_index maps each doctor to their correct hospital by email domain:
+        // 0=Square, 1=Evercare, 2=United, 3=Dhaka Medical, 4=Popular, 5=Apollo
         $doctorData = [
-            ['name' => 'Test Doctor', 'specialty' => 'General Practice', 'email' => 'test@doctor.com'],
-            ['name' => 'Dr. Tariq Rahman', 'specialty' => 'Cardiology', 'email' => 'dr.tariq@square.com'],
-            ['name' => 'Dr. Salma Ahmed', 'specialty' => 'Neurology', 'email' => 'dr.salma@evercare.com'],
-            ['name' => 'Dr. Kamal Hossain', 'specialty' => 'Internal Medicine', 'email' => 'dr.kamal@united.com'],
-            ['name' => 'Dr. Farhana Yasmin', 'specialty' => 'Orthopedics', 'email' => 'dr.farhana@dmch.gov.bd'],
-            ['name' => 'Dr. Rafiqul Islam', 'specialty' => 'Pediatrics', 'email' => 'dr.rafiqul@popular.com'],
-            ['name' => 'Dr. Shireen Haque', 'specialty' => 'Cardiology', 'email' => 'dr.shireen@square.com'],
-            ['name' => 'Dr. Anamul Hasan', 'specialty' => 'Neurology', 'email' => 'dr.anamul@evercare.com'],
-            ['name' => 'Dr. Nusrat Jahan', 'specialty' => 'Internal Medicine', 'email' => 'dr.nusrat@united.com'],
-            ['name' => 'Dr. Mahmudul Hasan', 'specialty' => 'Orthopedics', 'email' => 'dr.mahmudul@dmch.gov.bd'],
-<<<<<<< HEAD
-=======
-            ['name' => 'Dr. Zeba Fariha', 'specialty' => 'Pediatrics', 'email' => 'dr.zeba@popular.com'],
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
+            ['name' => 'Test Doctor',        'specialty' => 'General Practice',  'email' => 'test@doctor.com',           'hospital_index' => 0],
+            ['name' => 'Dr. Tariq Rahman',   'specialty' => 'Cardiology',        'email' => 'dr.tariq@square.com',       'hospital_index' => 0],
+            ['name' => 'Dr. Salma Ahmed',    'specialty' => 'Neurology',         'email' => 'dr.salma@evercare.com',     'hospital_index' => 1],
+            ['name' => 'Dr. Kamal Hossain', 'specialty' => 'Internal Medicine', 'email' => 'dr.kamal@united.com',      'hospital_index' => 2],
+            ['name' => 'Dr. Farhana Yasmin','specialty' => 'Orthopedics',       'email' => 'dr.farhana@dmch.gov.bd',   'hospital_index' => 3],
+            ['name' => 'Dr. Rafiqul Islam', 'specialty' => 'Pediatrics',        'email' => 'dr.rafiqul@popular.com',   'hospital_index' => 4],
+            ['name' => 'Dr. Shireen Haque', 'specialty' => 'Cardiology',        'email' => 'dr.shireen@square.com',    'hospital_index' => 0],
+            ['name' => 'Dr. Anamul Hasan',  'specialty' => 'Neurology',         'email' => 'dr.anamul@evercare.com',   'hospital_index' => 1],
+            ['name' => 'Dr. Nusrat Jahan',  'specialty' => 'Internal Medicine', 'email' => 'dr.nusrat@united.com',     'hospital_index' => 2],
+            ['name' => 'Dr. Mahmudul Hasan','specialty' => 'Orthopedics',       'email' => 'dr.mahmudul@dmch.gov.bd',  'hospital_index' => 3],
         ];
 
         $doctors = [];
@@ -132,19 +113,12 @@ class DatabaseSeeder extends Seeder
                 'email' => $data['email'],
                 'password' => Hash::make('12345678'),
                 'role' => 'doctor',
-<<<<<<< HEAD
                 'nid' => $validNids[$nidIndex++],
-=======
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
             $nameParts = explode(' ', str_replace('Dr. ', '', $data['name']), 2);
             $doctors[] = Doctor::create([
                 'user_id' => $user->id,
-<<<<<<< HEAD
-                'hospital_id' => $hospitals[$index % 10]->id,
-=======
-                'hospital_id' => $hospitals[$index % 5]->id,
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
+                'hospital_id' => $hospitals[$data['hospital_index']]->id,
                 'bmdc_number' => 'BMDC-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
                 'first_name' => $nameParts[0],
                 'last_name' => $nameParts[1] ?? '',
@@ -164,36 +138,22 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Tariq Hasan', 'email' => 'tariq.hasan@patient.com', 'gender' => 'male', 'blood' => 'B-'],
             ['name' => 'Nusrat Jahan', 'email' => 'nusrat.jahan@patient.com', 'gender' => 'female', 'blood' => 'A-'],
             ['name' => 'Arif Hossain', 'email' => 'arif.hossain@patient.com', 'gender' => 'male', 'blood' => 'O+'],
-            ['name' => 'Meherun Nesa', 'email' => 'meherun.nesa@patient.com', 'gender' => 'female', 'blood' => 'AB-'],
-<<<<<<< HEAD
-=======
             ['name' => 'Habibullah', 'email' => 'habibullah@patient.com', 'gender' => 'male', 'blood' => 'B+']
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
         ];
 
         $patients = [];
         foreach ($patientData as $index => $data) {
-<<<<<<< HEAD
             $nid = $validNids[$nidIndex++];
-=======
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             $user = User::create([
                 'email' => $data['email'],
                 'password' => Hash::make('12345678'),
                 'role' => 'patient',
-<<<<<<< HEAD
                 'nid' => $nid,
-=======
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
             ]);
             $nameParts = explode(' ', $data['name'], 2);
             $patients[] = Patient::create([
                 'user_id' => $user->id,
-<<<<<<< HEAD
                 'nid' => $nid,
-=======
-                'nid' => $validNids[$nidIndex++],
->>>>>>> a7d8eaf8bcdf9bb27d54e195e4bb8f6666692add
                 'first_name' => $nameParts[0],
                 'last_name' => $nameParts[1] ?? '',
                 'date_of_birth' => Carbon::now()->subYears(30 + $index)->format('Y-m-d'),
@@ -206,10 +166,10 @@ class DatabaseSeeder extends Seeder
 
         // 5. Build Rich History For EVERY Patient
 
-        // --- Patient 0: Rahim Uddin ---
+        // --- Patient 0: Test Patient ---
         Appointment::create([
             'patient_id' => $patients[0]->id,
-            'doctor_id' => $doctors[0]->id, // Dr. Tariq
+            'doctor_id' => $doctors[0]->id, 
             'hospital_id' => $hospitals[0]->id,
             'date' => Carbon::now()->subDays(60),
             'time_slot' => '10:00 AM',
@@ -240,10 +200,10 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subYears(2)
         ]);
 
-        // --- Patient 1: Fatema Begum ---
+        // --- Patient 1: Rahim Uddin ---
         Appointment::create([
             'patient_id' => $patients[1]->id,
-            'doctor_id' => $doctors[1]->id, // Dr. Salma
+            'doctor_id' => $doctors[1]->id, 
             'hospital_id' => $hospitals[1]->id,
             'date' => Carbon::now()->subDays(15),
             'time_slot' => '11:00 AM',
@@ -266,10 +226,10 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subMonths(6)
         ]);
 
-        // --- Patient 2: Karim Ali ---
+        // --- Patient 2: Fatema Begum ---
         Appointment::create([
             'patient_id' => $patients[2]->id,
-            'doctor_id' => $doctors[2]->id, // Dr. Kamal
+            'doctor_id' => $doctors[2]->id, 
             'hospital_id' => $hospitals[2]->id,
             'date' => Carbon::now()->subDays(5),
             'time_slot' => '04:00 PM',
@@ -292,10 +252,10 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subDays(1)
         ]);
 
-        // --- Patient 3: Sumaiya Akter ---
+        // --- Patient 3: Karim Ali ---
         Appointment::create([
             'patient_id' => $patients[3]->id,
-            'doctor_id' => $doctors[3]->id, // Dr. Farhana
+            'doctor_id' => $doctors[3]->id, 
             'hospital_id' => $hospitals[3]->id,
             'date' => Carbon::now()->subDays(40),
             'time_slot' => '05:00 PM',
@@ -318,10 +278,10 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subDays(100)
         ]);
 
-        // --- Patient 4: Kazi Noman ---
+        // --- Patient 4: Sumaiya Akter ---
         Appointment::create([
             'patient_id' => $patients[4]->id,
-            'doctor_id' => $doctors[4]->id, // Dr. Rafiqul
+            'doctor_id' => $doctors[4]->id, 
             'hospital_id' => $hospitals[4]->id,
             'date' => Carbon::now()->subDays(10),
             'time_slot' => '06:00 PM',
@@ -344,7 +304,7 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subDays(200)
         ]);
 
-        // --- Patient 5: Tariq Hasan ---
+        // --- Patient 5: Kazi Noman ---
         MedicalRecord::create([
             'patient_id' => $patients[5]->id,
             'doctor_id' => $doctors[5]->id,
@@ -354,7 +314,7 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subDays(12)
         ]);
 
-        // --- Patient 6: Nusrat Jahan ---
+        // --- Patient 6: Tariq Hasan ---
         MedicalRecord::create([
             'patient_id' => $patients[6]->id,
             'doctor_id' => $doctors[6]->id,
@@ -364,7 +324,7 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subDays(5)
         ]);
 
-        // --- Patient 7: Arif Hossain ---
+        // --- Patient 7: Nusrat Jahan ---
         MedicalRecord::create([
             'patient_id' => $patients[7]->id,
             'doctor_id' => $doctors[3]->id,
@@ -374,7 +334,7 @@ class DatabaseSeeder extends Seeder
             'date' => Carbon::now()->subDays(22)
         ]);
 
-        // --- Patient 8: Meherun Nesa ---
+        // --- Patient 8: Arif Hossain ---
         MedicalRecord::create([
             'patient_id' => $patients[8]->id,
             'doctor_id' => $doctors[1]->id,
