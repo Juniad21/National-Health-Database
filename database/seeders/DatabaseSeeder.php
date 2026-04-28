@@ -92,17 +92,19 @@ class DatabaseSeeder extends Seeder
         }
 
         // 3. Create 10 Doctors
+        // hospital_index maps each doctor to their correct hospital by email domain:
+        // 0=Square, 1=Evercare, 2=United, 3=Dhaka Medical, 4=Popular, 5=Apollo
         $doctorData = [
-            ['name' => 'Test Doctor', 'specialty' => 'General Practice', 'email' => 'test@doctor.com'],
-            ['name' => 'Dr. Tariq Rahman', 'specialty' => 'Cardiology', 'email' => 'dr.tariq@square.com'],
-            ['name' => 'Dr. Salma Ahmed', 'specialty' => 'Neurology', 'email' => 'dr.salma@evercare.com'],
-            ['name' => 'Dr. Kamal Hossain', 'specialty' => 'Internal Medicine', 'email' => 'dr.kamal@united.com'],
-            ['name' => 'Dr. Farhana Yasmin', 'specialty' => 'Orthopedics', 'email' => 'dr.farhana@dmch.gov.bd'],
-            ['name' => 'Dr. Rafiqul Islam', 'specialty' => 'Pediatrics', 'email' => 'dr.rafiqul@popular.com'],
-            ['name' => 'Dr. Shireen Haque', 'specialty' => 'Cardiology', 'email' => 'dr.shireen@square.com'],
-            ['name' => 'Dr. Anamul Hasan', 'specialty' => 'Neurology', 'email' => 'dr.anamul@evercare.com'],
-            ['name' => 'Dr. Nusrat Jahan', 'specialty' => 'Internal Medicine', 'email' => 'dr.nusrat@united.com'],
-            ['name' => 'Dr. Mahmudul Hasan', 'specialty' => 'Orthopedics', 'email' => 'dr.mahmudul@dmch.gov.bd'],
+            ['name' => 'Test Doctor',        'specialty' => 'General Practice',  'email' => 'test@doctor.com',           'hospital_index' => 0],
+            ['name' => 'Dr. Tariq Rahman',   'specialty' => 'Cardiology',        'email' => 'dr.tariq@square.com',       'hospital_index' => 0],
+            ['name' => 'Dr. Salma Ahmed',    'specialty' => 'Neurology',         'email' => 'dr.salma@evercare.com',     'hospital_index' => 1],
+            ['name' => 'Dr. Kamal Hossain', 'specialty' => 'Internal Medicine', 'email' => 'dr.kamal@united.com',      'hospital_index' => 2],
+            ['name' => 'Dr. Farhana Yasmin','specialty' => 'Orthopedics',       'email' => 'dr.farhana@dmch.gov.bd',   'hospital_index' => 3],
+            ['name' => 'Dr. Rafiqul Islam', 'specialty' => 'Pediatrics',        'email' => 'dr.rafiqul@popular.com',   'hospital_index' => 4],
+            ['name' => 'Dr. Shireen Haque', 'specialty' => 'Cardiology',        'email' => 'dr.shireen@square.com',    'hospital_index' => 0],
+            ['name' => 'Dr. Anamul Hasan',  'specialty' => 'Neurology',         'email' => 'dr.anamul@evercare.com',   'hospital_index' => 1],
+            ['name' => 'Dr. Nusrat Jahan',  'specialty' => 'Internal Medicine', 'email' => 'dr.nusrat@united.com',     'hospital_index' => 2],
+            ['name' => 'Dr. Mahmudul Hasan','specialty' => 'Orthopedics',       'email' => 'dr.mahmudul@dmch.gov.bd',  'hospital_index' => 3],
         ];
 
         $doctors = [];
@@ -116,7 +118,7 @@ class DatabaseSeeder extends Seeder
             $nameParts = explode(' ', str_replace('Dr. ', '', $data['name']), 2);
             $doctors[] = Doctor::create([
                 'user_id' => $user->id,
-                'hospital_id' => $hospitals[$index % 10]->id,
+                'hospital_id' => $hospitals[$data['hospital_index']]->id,
                 'bmdc_number' => 'BMDC-' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
                 'first_name' => $nameParts[0],
                 'last_name' => $nameParts[1] ?? '',

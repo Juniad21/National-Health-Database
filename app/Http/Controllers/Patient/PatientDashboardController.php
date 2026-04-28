@@ -84,7 +84,7 @@ class PatientDashboardController extends Controller
             'hospital_id' => $hospitalId,
             'date' => $validated['date'],
             'time_slot' => $validated['time_slot'],
-            'status' => 'Pending',
+            'status' => 'pending',
             'booking_id' => 'BK-' . Str::upper(Str::random(12)),
         ]);
 
