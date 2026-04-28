@@ -38,18 +38,18 @@
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-yellow-50 rounded-2xl border border-yellow-200 gap-4">
                             <div class="flex items-center gap-4">
                                 <div class="w-11 h-11 rounded-full bg-yellow-200 text-yellow-800 flex items-center justify-center font-black text-lg flex-shrink-0">
-                                    {{ substr($appointment->patient->first_name, 0, 1) }}
+                                    {{ substr($appointment->patient->first_name ?? 'P', 0, 1) }}
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-800 text-base">
-                                        {{ $appointment->patient->first_name }} {{ $appointment->patient->last_name }}
+                                        {{ $appointment->patient->first_name ?? 'Unknown' }} {{ $appointment->patient->last_name ?? 'Patient' }}
                                     </p>
                                     <p class="text-sm text-gray-500">
                                         📅 {{ \Carbon\Carbon::parse($appointment->date)->format('D, M d Y') }}
                                         &bull; ⏰ {{ $appointment->time_slot }}
                                     </p>
                                     <p class="text-sm text-gray-500">
-                                        🏥 {{ $appointment->hospital->name }}
+                                        🏥 {{ $appointment->hospital->name ?? 'Unknown Hospital' }}
                                     </p>
                                     @if($appointment->booking_id)
                                         <p class="text-xs text-gray-400 mt-0.5">Booking: {{ $appointment->booking_id }}</p>
@@ -103,7 +103,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-gray-800">
-                                        {{ $appointment->patient->first_name }} {{ $appointment->patient->last_name }}
+                                        {{ $appointment->patient->first_name ?? 'Unknown' }} {{ $appointment->patient->last_name ?? 'Patient' }}
                                     </h4>
                                     <p class="text-sm text-gray-500">
                                         Scheduled: <span class="font-semibold text-gray-700">{{ $appointment->time_slot }}</span>
@@ -170,9 +170,10 @@
                         <div class="space-y-3">
                             @foreach($patientResults as $res)
                                 @php
-                                    $hasAccess = \App\Models\AccessRequest::where('doctor_id', $doctor->id)
+                                    $doctor = Auth::user()->doctor;
+                                    $hasAccess = \App\Models\AccessRequest::where('doctor_id', $doctor?->id)
                                         ->where('patient_id', $res->id)->where('status', 'approved')->exists();
-                                    $pendingAccess = \App\Models\AccessRequest::where('doctor_id', $doctor->id)
+                                    $pendingAccess = \App\Models\AccessRequest::where('doctor_id', $doctor?->id)
                                         ->where('patient_id', $res->id)->where('status', 'pending')->exists();
                                 @endphp
                                 <div class="p-3 border border-gray-200 rounded-xl flex flex-col gap-2 hover:border-blue-200 transition-colors">
