@@ -12,7 +12,6 @@
             Audit Trail
         </h3>
 
-        <!-- Filters -->
         <form action="{{ route('hospital.logs') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
             <div>
                 <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Action</label>
@@ -50,7 +49,6 @@
             </div>
         </form>
 
-        <!-- Logs Table -->
         <div class="overflow-x-auto border border-gray-100 rounded-lg">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -69,7 +67,7 @@
                                 {{ $log->created_at->format('M d, Y H:i:s') }}
                             </td>
                             <td class="p-4">
-                                <div class="font-medium text-gray-800">{{ $log->user ? $log->user->email : 'System/Unknown' }}</div>
+                                <div class="font-medium text-gray-800">{{ $log->user?->email ?? 'System/Unknown' }}</div>
                                 <div class="text-xs text-gray-500">{{ ucfirst($log->role) }}</div>
                             </td>
                             <td class="p-4">

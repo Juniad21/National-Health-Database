@@ -17,7 +17,8 @@ class Appointment extends Model
         'time_slot',
         'status',
         'booking_id',
-        'token_number'
+        'token_number',
+        'called_at',
     ];
 
     public function patient()
