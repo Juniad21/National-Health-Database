@@ -3,7 +3,11 @@
 @section('header_title', 'Hospital Operations Center')
 
 @section('emergency_banner')
-    @if($emergencies->count() > 0)
+    @php
+        $activeEmergency = $emergencies->where('status', 'active')->first();
+    @endphp
+
+    @if($activeEmergency)
         <!-- Intrusive Flashing Red Banner for Emergencies -->
         <div
             x-data="{ showBanner: true }"
@@ -19,20 +23,16 @@
                     <div>
                         <h2 class="font-black text-sm tracking-tight uppercase">Emergency Alert</h2>
                         <p class="text-red-100 text-[11px] font-medium leading-tight">
-                            {{ $emergencies->first()->patient->first_name }} reported a critical emergency.
+                            {{ $activeEmergency->patient->first_name }} reported a critical emergency.
                         </p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    @if($emergencies->first()->status === 'active')
-                        <form action="{{ route('hospital.emergencies.dispatch', $emergencies->first()->id) }}" method="POST">
-                            @csrf
-                            <button class="px-3 py-1.5 bg-white text-red-700 text-[11px] font-black rounded-lg hover:bg-red-50 transition-all uppercase tracking-tighter">Dispatch</button>
-                        </form>
-                    @else
-                        <span class="bg-red-800 px-2 py-1.5 rounded-lg text-[10px] font-black border border-red-500 uppercase tracking-tighter">Dispatched</span>
-                    @endif
+                    <form action="{{ route('hospital.emergencies.dispatch', $activeEmergency->id) }}" method="POST">
+                        @csrf
+                        <button class="px-3 py-1.5 bg-white text-red-700 text-[11px] font-black rounded-lg hover:bg-red-50 transition-all uppercase tracking-tighter">Dispatch</button>
+                    </form>
 
                     <button @click="showBanner = false" class="p-1.5 hover:bg-red-700 rounded-lg transition-colors" title="Dismiss">
                         <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
