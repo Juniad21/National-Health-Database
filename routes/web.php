@@ -8,7 +8,7 @@ use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Hospital\HospitalDashboardController;
 use App\Http\Controllers\Hospital\HospitalAuditLogController;
 use App\Http\Controllers\Hospital\HospitalBillingController;
-use App\Http\Controllers\DuplicateRecordController;
+use App\Http\Controllers\Admin\DuplicateRecordController;
 
 // 1. Redirect Home to Login
 Route::get('/', function () {
@@ -87,8 +87,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/billing/claims/{id}/status', [HospitalBillingController::class, 'updateClaimStatus'])->name('billing.claim.status.update');
 
         // Duplicate Records
-        Route::get('/duplicates', [DuplicateRecordController::class, 'identifyDuplicates'])->name('duplicates.index');
-        Route::post('/duplicates/merge', [DuplicateRecordController::class, 'mergeDuplicates'])->name('duplicates.merge');
+        Route::get('/duplicates', [DuplicateRecordController::class, 'index'])->name('duplicates.index');
+        Route::get('/duplicates/compare/{id1}/{id2}', [DuplicateRecordController::class, 'compare'])->name('duplicates.compare');
+        Route::post('/duplicates/merge', [DuplicateRecordController::class, 'merge'])->name('duplicates.merge');
     });
 });
 
