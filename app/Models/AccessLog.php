@@ -14,9 +14,13 @@ class AccessLog extends Model
         'hospital_id',
         'role',
         'action',
+        'module',
         'target_type',
         'target_id',
         'description',
+        'old_value',
+        'new_value',
+        'severity',
         'ip_address',
         'user_agent',
     ];
