@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==========================================
     // PATIENT ROUTES
     // ==========================================
-    Route::prefix('patient')->name('patient.')->group(function () {
+    Route::prefix('patient')->name('patient.')->middleware('role:patient')->group(function () {
         Route::get('/dashboard', [PatientDashboardController::class, 'index'])->name('dashboard');
         Route::get('/scheduling', [PatientDashboardController::class, 'scheduling'])->name('scheduling');
         Route::post('/scheduling', [PatientDashboardController::class, 'storeAppointment'])->name('appointment.store');
@@ -61,13 +61,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==========================================
     // DOCTOR ROUTES
     // ==========================================
-    Route::prefix('doctor')->name('doctor.')->group(function () {
+    Route::prefix('doctor')->name('doctor.')->middleware('role:doctor')->group(function () {
         Route::get('/dashboard', [DoctorDashboardController::class, 'index'])->name('dashboard');
         Route::get('/patient/{id}', [DoctorDashboardController::class, 'viewPatient'])->name('patient.view');
         Route::post('/patient/{id}/request-access', [DoctorDashboardController::class, 'requestAccess'])->name('patient.request_access');
         Route::post('/patient/{patient_id}/medical-record', [DoctorDashboardController::class, 'storeMedicalRecord'])->name('medical_record.store');
         Route::get('/consultation/{patient_id}', [DoctorDashboardController::class, 'consultation'])->name('consultation');
         Route::post('/consultation/{patient_id}', [DoctorDashboardController::class, 'storeConsultation'])->name('consultation.store');
+        // ... (remaining doctor routes)
         Route::post('/queue/{appointment_id}/visit', [DoctorDashboardController::class, 'markVisited'])->name('queue.visit');
         Route::post('/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('appointment.approve');
         Route::get('/emergency/{id}', [DoctorDashboardController::class, 'viewEmergency'])->name('emergency.view');
@@ -77,10 +78,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==========================================
     // HOSPITAL ROUTES
     // ==========================================
-    Route::prefix('hospital')->name('hospital.')->group(function () {
+    Route::prefix('hospital')->name('hospital.')->middleware('role:hospital')->group(function () {
         Route::get('/dashboard', [HospitalDashboardController::class, 'index'])->name('dashboard');
         Route::get('/logs', [HospitalAuditLogController::class, 'index'])->name('logs');
-
+        // ... (remaining hospital routes)
         Route::post('/lab-orders/{id}/complete', [HospitalDashboardController::class, 'completeLabOrder'])->name('lab_orders.complete');
         Route::post('/resources/{id}/update', [HospitalDashboardController::class, 'updateResource'])->name('resources.update');
         Route::get('/emergencies', [HospitalDashboardController::class, 'emergencies'])->name('emergencies.index');
@@ -110,7 +111,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==========================================
     // GOVT ADMIN ROUTES
     // ==========================================
-    Route::prefix('govt-admin')->name('govt_admin.')->group(function () {
+    Route::prefix('govt-admin')->name('govt_admin.')->middleware('role:govt_admin')->group(function () {
         Route::get('/dashboard', [GovtAdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/audit-logs', [\App\Http\Controllers\Govt\AuditLogController::class, 'index'])->name('audit_logs');
         Route::get('/audit-logs/export', [\App\Http\Controllers\Govt\AuditLogController::class, 'exportCsv'])->name('audit_logs.export');
