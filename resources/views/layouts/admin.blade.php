@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ config('app.name', 'National Health DB') }} - Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body class="font-sans antialiased text-gray-800 bg-gray-50 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl hidden md:flex">
+        <div class="h-20 flex items-center justify-center border-b border-slate-800">
+            <h1 class="text-2xl font-bold tracking-wider text-slate-100">Health<span class="text-blue-400">Admin</span></h1>
+        </div>
+
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="{{ route('dashboard') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('dashboard') ? 'bg-slate-800 text-white font-semibold shadow-md' : 'text-slate-100 hover:bg-slate-800 hover:text-white' }}">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                Dashboard
+            </a>
+
+            <div class="pt-4 pb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Data Management</div>
+
+            <a href="{{ route('admin.duplicates.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('admin.duplicates.*') ? 'bg-blue-600 text-white font-semibold shadow-md' : 'text-slate-100 hover:bg-slate-800 hover:text-white' }}">
+                <svg class="w-5 h-5 {{ request()->routeIs('admin.duplicates.*') ? 'text-white' : 'text-blue-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                </svg>
+                Duplicate Records
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </a>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Top Navbar -->
+        <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 shadow-sm">
+            <h2 class="text-xl font-semibold text-gray-700">@yield('header_title', 'Admin Dashboard')</h2>
+
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end">
+                    <span class="text-sm font-semibold text-gray-800">{{ Auth::user()->email }}</span>
+                    <span class="text-xs text-blue-600 font-medium tracking-wide border px-2 py-0.5 rounded-full bg-blue-50 border-blue-100 mt-1 uppercase">Administrator</span>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border-2 border-blue-200">
+                    AD
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50/50 p-8">
+            <div class="max-w-6xl mx-auto space-y-6">
+                <!-- Notifications -->
+                @if (session('success'))
+                    <div class="px-6 py-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-xl shadow-sm rounded-l-md" role="alert">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            {{ session('success') }}
+                        </div>
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="px-6 py-4 bg-rose-50 border-l-4 border-rose-500 text-rose-800 rounded-r-xl shadow-sm rounded-l-md" role="alert">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            {{ session('error') }}
+                        </div>
+                    </div>
+                @endif
+
+                @yield('content')
+            </div>
+        </main>
+    </div>
+</body>
+</html>
