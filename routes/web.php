@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/scheduling', [PatientDashboardController::class, 'scheduling'])->name('scheduling');
         Route::post('/scheduling', [PatientDashboardController::class, 'storeAppointment'])->name('appointment.store');
         Route::get('/medical-records', [PatientDashboardController::class, 'medicalRecords'])->name('medical_records');
+        Route::get('/bills', [PatientDashboardController::class, 'bills'])->name('bills');
+        Route::post('/bills/{id}/pay', [PatientDashboardController::class, 'payBill'])->name('bills.pay');
         Route::get('/consents', [PatientDashboardController::class, 'consents'])->name('consents');
         Route::post('/consents', [PatientDashboardController::class, 'updateConsent'])->name('consent.update');
         Route::match(['get', 'post'], '/symptoms', [PatientDashboardController::class, 'symptomAssessment'])->name('symptoms');

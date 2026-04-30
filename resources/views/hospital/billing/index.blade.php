@@ -5,11 +5,25 @@
 @section('content')
 <div class="space-y-6">
     <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold text-gray-800">Hospital Bills</h2>
+        <h2 class="text-2xl font-bold text-gray-800">Billing & Insurance</h2>
         <a href="{{ route('hospital.billing.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition font-medium text-sm flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Create New Bill
         </a>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <a href="{{ route('hospital.billing.index') }}" 
+                class="{{ request()->routeIs('hospital.billing.index') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Hospital Bills
+            </a>
+            <a href="{{ route('hospital.billing.claims') }}" 
+                class="{{ request()->routeIs('hospital.billing.claims') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Insurance Claims
+            </a>
+        </nav>
     </div>
 
     <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
