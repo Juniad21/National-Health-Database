@@ -170,16 +170,24 @@ class HospitalDashboardController extends Controller
     public function dispatchAmbulance(Request $request, $id)
     {
         $validated = $request->validate([
-            'ambulance_id' => 'required|exists:users,id',
+            'ambulance_id' => 'nullable|exists:users,id',
         ]);
 
         $emergency = \App\Models\Emergency::findOrFail($id);
+
+        // Auto-assign first available ambulance if none was selected (e.g. from the banner)
+        $ambulanceId = $validated['ambulance_id'] ?? null;
+        if (!$ambulanceId) {
+            $ambulanceUser = \App\Models\User::where('role', 'ambulance')->first();
+            $ambulanceId = $ambulanceUser?->id;
+        }
+
         $emergency->update([
-            'assigned_ambulance_id' => $validated['ambulance_id'],
+            'assigned_ambulance_id' => $ambulanceId,
             'status' => 'Ambulance Assigned',
         ]);
 
-        return redirect()->back()->with('success', 'Ambulance assigned successfully.');
+        return redirect()->back()->with('success', 'Ambulance dispatched successfully.');
     }
 
     public function assignDoctor(Request $request, $id)
