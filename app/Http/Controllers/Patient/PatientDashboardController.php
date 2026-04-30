@@ -99,12 +99,51 @@ class PatientDashboardController extends Controller
             ->orderBy('date', 'desc')
             ->get();
         
+        $labOrders = \App\Models\LabOrder::where('patient_id', $patient->id)
+            ->where('status', 'completed')
+            ->with(['doctor', 'hospital', 'labTestCatalog'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+        
         // Group records by type
         $records = $allRecords->groupBy('record_type');
         
         return view('patient.medical_records', [
-            'records' => $records
+            'records' => $records,
+            'labOrders' => $labOrders
         ]);
+    }
+
+    public function bills()
+    {
+        $patient = Auth::user()->patient;
+        $bills = \App\Models\Bill::where('patient_id', $patient->id)
+            ->with('hospital')
+            ->orderBy('issued_date', 'desc')
+            ->get();
+            
+        return view('patient.bills', [
+            'bills' => $bills
+        ]);
+    }
+
+    public function payBill(Request $request, $id)
+    {
+        $bill = \App\Models\Bill::findOrFail($id);
+        $patient = Auth::user()->patient;
+
+        if ($bill->patient_id !== $patient->id) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
+        // Mock payment processing
+        $bill->update([
+            'paid_amount' => $bill->total_amount,
+            'due_amount' => 0,
+            'payment_status' => 'paid',
+        ]);
+
+        return redirect()->back()->with('success', 'Payment successful! Your bill has been marked as paid.');
     }
 
     public function consents()
