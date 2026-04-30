@@ -51,7 +51,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/access-requests/{id}/approve', [PatientDashboardController::class, 'approveAccessRequest'])->name('access_requests.approve');
         Route::post('/access-requests/{id}/reject', [PatientDashboardController::class, 'rejectAccessRequest'])->name('access_requests.reject');
         Route::post('/vaccinations/{id}/mark-taken', [PatientDashboardController::class, 'markVaccineTaken'])->name('vaccinations.mark_taken');
+        Route::get('/emergency', [PatientDashboardController::class, 'emergencyHistory'])->name('emergency.history');
+        Route::get('/emergency/sos', [PatientDashboardController::class, 'emergencySos'])->name('emergency.sos');
         Route::post('/emergency/trigger', [PatientDashboardController::class, 'triggerEmergency'])->name('emergency.trigger');
+        Route::get('/emergency/{id}', [PatientDashboardController::class, 'viewEmergency'])->name('emergency.view');
         Route::post('/evaluation', [PatientDashboardController::class, 'storeEvaluation'])->name('evaluation.store');
     });
 
@@ -67,6 +70,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/consultation/{patient_id}', [DoctorDashboardController::class, 'storeConsultation'])->name('consultation.store');
         Route::post('/queue/{appointment_id}/visit', [DoctorDashboardController::class, 'markVisited'])->name('queue.visit');
         Route::post('/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('appointment.approve');
+        Route::get('/emergency/{id}', [DoctorDashboardController::class, 'viewEmergency'])->name('emergency.view');
+        Route::post('/emergency/{id}/triage', [DoctorDashboardController::class, 'storeTriage'])->name('emergency.triage');
     });
 
     // ==========================================
@@ -78,7 +83,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/lab-orders/{id}/complete', [HospitalDashboardController::class, 'completeLabOrder'])->name('lab_orders.complete');
         Route::post('/resources/{id}/update', [HospitalDashboardController::class, 'updateResource'])->name('resources.update');
+        Route::get('/emergencies', [HospitalDashboardController::class, 'emergencies'])->name('emergencies.index');
+        Route::get('/emergencies/{id}', [HospitalDashboardController::class, 'viewEmergency'])->name('emergencies.view');
+        Route::post('/emergencies/{id}/accept', [HospitalDashboardController::class, 'acceptEmergency'])->name('emergencies.accept');
+        Route::post('/emergencies/{id}/reject', [HospitalDashboardController::class, 'rejectEmergency'])->name('emergencies.reject');
         Route::post('/emergencies/{id}/dispatch', [HospitalDashboardController::class, 'dispatchAmbulance'])->name('emergencies.dispatch');
+        Route::post('/emergencies/{id}/assign-doctor', [HospitalDashboardController::class, 'assignDoctor'])->name('emergencies.assign_doctor');
         Route::post('/emergencies/{id}/resolve', [HospitalDashboardController::class, 'resolveEmergency'])->name('emergencies.resolve');
 
         // Hospital Billing & Claims
@@ -104,6 +114,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [GovtAdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/audit-logs', [\App\Http\Controllers\Govt\AuditLogController::class, 'index'])->name('audit_logs');
         Route::get('/audit-logs/export', [\App\Http\Controllers\Govt\AuditLogController::class, 'exportCsv'])->name('audit_logs.export');
+        Route::get('/emergencies', [GovtAdminDashboardController::class, 'emergencies'])->name('emergencies.index');
+    });
+
+    // ==========================================
+    // AMBULANCE ROUTES
+    // ==========================================
+    Route::prefix('ambulance')->name('ambulance.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Ambulance\AmbulanceDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/emergency/{id}/status', [\App\Http\Controllers\Ambulance\AmbulanceDashboardController::class, 'updateStatus'])->name('emergency.status');
     });
 });
 

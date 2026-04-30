@@ -281,28 +281,72 @@ class PatientDashboardController extends Controller
         return redirect()->back()->with('success', 'Vaccine marked as taken!');
     }
 
-    public function triggerEmergency()
+    public function emergencyHistory()
+    {
+        $patient = Auth::user()->patient;
+        $emergencies = \App\Models\Emergency::where('patient_id', $patient->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('patient.emergency.history', compact('emergencies'));
+    }
+
+    public function emergencySos()
+    {
+        return view('patient.emergency.sos');
+    }
+
+    public function triggerEmergency(Request $request)
     {
         $patient = Auth::user()->patient;
 
+        $validated = $request->validate([
+            'emergency_type' => 'required|string',
+            'severity' => 'required|string',
+            'symptoms' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'address' => 'nullable|string',
+            'contact_number' => 'required|string',
+            'guardian_contact' => 'nullable|string',
+        ]);
+
         $emergency = \App\Models\Emergency::create([
             'patient_id' => $patient->id,
-            'hospital_id' => null,
-            'status' => 'active',
-            'latitude' => null,
-            'longitude' => null,
+            'status' => 'Sent',
+            'emergency_type' => $validated['emergency_type'],
+            'severity' => $validated['severity'],
+            'symptoms' => $validated['symptoms'],
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'address' => $validated['address'],
+            'contact_number' => $validated['contact_number'],
+            'guardian_contact' => $validated['guardian_contact'],
+            'created_by' => Auth::id(),
         ]);
 
         \App\Services\AuditLogService::logAction(
             action: 'emergency triggered',
-            description: "Patient triggered an emergency alert",
+            description: "Patient triggered a {$validated['severity']} emergency: {$validated['emergency_type']}",
             module: 'emergency',
-            severity: 'high',
+            severity: 'critical',
             targetType: \App\Models\Emergency::class,
             targetId: $emergency->id
         );
 
-        return redirect()->back()->with('success', 'Emergency alert triggered! Help is on the way.');
+        return redirect()->route('patient.emergency.view', $emergency->id)->with('success', 'Emergency alert triggered! Help is on the way.');
+    }
+
+    public function viewEmergency($id)
+    {
+        $emergency = \App\Models\Emergency::with(['hospital', 'doctor', 'ambulanceStaff'])->findOrFail($id);
+        $patient = Auth::user()->patient;
+
+        if ($emergency->patient_id !== $patient->id) {
+            return redirect()->back()->with('error', 'Unauthorized access.');
+        }
+
+        return view('patient.emergency.view', compact('emergency'));
     }
 
     public function storeEvaluation(Request $request)
