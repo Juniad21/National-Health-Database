@@ -56,29 +56,49 @@
                         <th class="p-4 font-bold text-gray-700 uppercase tracking-wide">Timestamp</th>
                         <th class="p-4 font-bold text-gray-700 uppercase tracking-wide">User</th>
                         <th class="p-4 font-bold text-gray-700 uppercase tracking-wide">Action</th>
+                        <th class="p-4 font-bold text-gray-700 uppercase tracking-wide">Module</th>
+                        <th class="p-4 font-bold text-gray-700 uppercase tracking-wide">Severity</th>
                         <th class="p-4 font-bold text-gray-700 uppercase tracking-wide">Details</th>
-                        <th class="p-4 font-bold text-gray-700 uppercase tracking-wide">IP Address</th>
+                        <th class="p-4 font-bold text-gray-700 uppercase tracking-wide text-right">IP Address</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-sm">
                     @forelse($logs as $log)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="p-4 text-gray-600 whitespace-nowrap">
-                                {{ $log->created_at->format('M d, Y H:i:s') }}
+                                <div class="font-bold">{{ $log->created_at->format('M d, Y') }}</div>
+                                <div class="text-[10px] text-gray-400 font-mono">{{ $log->created_at->format('H:i:s') }}</div>
                             </td>
                             <td class="p-4">
-                                <div class="font-medium text-gray-800">{{ $log->user?->email ?? 'System/Unknown' }}</div>
-                                <div class="text-xs text-gray-500">{{ ucfirst($log->role) }}</div>
+                                <div class="font-bold text-gray-800">{{ $log->user ? $log->user->first_name . ' ' . $log->user->last_name : 'System' }}</div>
+                                <div class="text-[10px] text-indigo-500 font-black uppercase tracking-widest">{{ $log->role }}</div>
                             </td>
                             <td class="p-4">
-                                <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-1 rounded">
-                                    {{ $log->action }}
+                                <span class="font-medium text-gray-700">{{ $log->action }}</span>
+                            </td>
+                            <td class="p-4">
+                                <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
+                                    {{ $log->module ?? 'General' }}
                                 </span>
                             </td>
-                            <td class="p-4 text-gray-600">
+                            <td class="p-4">
+                                @php
+                                    $severityColors = [
+                                        'low' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                        'medium' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                        'high' => 'bg-red-100 text-red-700 border-red-200',
+                                        'critical' => 'bg-black text-white border-black',
+                                    ];
+                                    $color = $severityColors[strtolower($log->severity)] ?? 'bg-gray-100 text-gray-700 border-gray-200';
+                                @endphp
+                                <span class="{{ $color }} text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter border">
+                                    {{ $log->severity }}
+                                </span>
+                            </td>
+                            <td class="p-4 text-gray-600 italic">
                                 {{ $log->description ?: '-' }}
                             </td>
-                            <td class="p-4 text-gray-500 font-mono text-xs">
+                            <td class="p-4 text-gray-400 font-mono text-xs text-right">
                                 {{ $log->ip_address }}
                             </td>
                         </tr>
