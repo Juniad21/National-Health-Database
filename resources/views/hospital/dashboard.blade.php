@@ -6,40 +6,38 @@
     @if($emergencies->count() > 0)
         <!-- Intrusive Flashing Red Banner for Emergencies -->
         <div
-            class="bg-red-600 text-white w-full py-4 px-6 shadow-2xl flex items-center justify-between border-b-4 border-red-800 animate-pulse relative z-50">
-            <div class="flex items-center gap-4">
-                <svg class="w-8 h-8 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-                    </path>
-                </svg>
-                <div>
-                    <h2 class="font-bold text-lg tracking-wider">CRITICAL: EMERGENCY ALERT TRIGGERED</h2>
-                    <p class="text-red-100 text-sm font-medium">{{ $emergencies->first()->patient->first_name }}
-                        {{ $emergencies->first()->patient->last_name }} reported an extreme medical emergency.</p>
+            x-data="{ showBanner: true }"
+            x-show="showBanner"
+            class="fixed top-24 left-1/2 -translate-x-1/2 z-[60] w-full max-w-2xl px-4 animate-bounce">
+            <div class="bg-red-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border-b-4 border-red-800 relative">
+                <div class="flex items-center gap-3">
+                    <div class="bg-red-700 p-2 rounded-xl">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="font-black text-sm tracking-tight uppercase">Emergency Alert</h2>
+                        <p class="text-red-100 text-[11px] font-medium leading-tight">
+                            {{ $emergencies->first()->patient->first_name }} reported a critical emergency.
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="flex items-center gap-3">
-                @if($emergencies->first()->status === 'active')
-                    <form action="{{ route('hospital.emergencies.dispatch', $emergencies->first()->id) }}" method="POST">
-                        @csrf
-                        <button
-                            class="px-5 py-2 bg-white text-red-700 font-bold rounded shadow hover:bg-red-50 transition-colors">Dispatch
-                            Ambulance</button>
-                    </form>
-                @else
-                    <span class="bg-red-800 px-3 py-1.5 rounded font-bold border border-red-500">Ambulance Dispatched</span>
-                @endif
+                <div class="flex items-center gap-2">
+                    @if($emergencies->first()->status === 'active')
+                        <form action="{{ route('hospital.emergencies.dispatch', $emergencies->first()->id) }}" method="POST">
+                            @csrf
+                            <button class="px-3 py-1.5 bg-white text-red-700 text-[11px] font-black rounded-lg hover:bg-red-50 transition-all uppercase tracking-tighter">Dispatch</button>
+                        </form>
+                    @else
+                        <span class="bg-red-800 px-2 py-1.5 rounded-lg text-[10px] font-black border border-red-500 uppercase tracking-tighter">Dispatched</span>
+                    @endif
 
-                @if($emergencies->first()->status === 'dispatched')
-                    <form action="{{ route('hospital.emergencies.resolve', $emergencies->first()->id) }}" method="POST">
-                        @csrf
-                        <button
-                            class="px-5 py-2 bg-gray-900 text-white font-bold rounded shadow hover:bg-black transition-colors">Mark
-                            Resolved</button>
-                    </form>
-                @endif
+                    <button @click="showBanner = false" class="p-1.5 hover:bg-red-700 rounded-lg transition-colors" title="Dismiss">
+                        <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
             </div>
         </div>
     @endif

@@ -102,6 +102,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/billing/{bill_id}/claim', [HospitalBillingController::class, 'submitClaim'])->name('billing.claim.submit');
         Route::post('/billing/claims/{id}/status', [HospitalBillingController::class, 'updateClaimStatus'])->name('billing.claim.status.update');
 
+        // Disease Reporting
+        Route::prefix('disease-reports')->name('disease_reports.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Hospital\HospitalDiseaseReportController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Hospital\HospitalDiseaseReportController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Hospital\HospitalDiseaseReportController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\Hospital\HospitalDiseaseReportController::class, 'show'])->name('show');
+        });
+
         // Duplicate Records
         Route::get('/duplicates', [DuplicateRecordController::class, 'index'])->name('duplicates.index');
         Route::get('/duplicates/compare/{id1}/{id2}', [DuplicateRecordController::class, 'compare'])->name('duplicates.compare');
@@ -116,6 +124,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/audit-logs', [\App\Http\Controllers\Govt\AuditLogController::class, 'index'])->name('audit_logs');
         Route::get('/audit-logs/export', [\App\Http\Controllers\Govt\AuditLogController::class, 'exportCsv'])->name('audit_logs.export');
         Route::get('/emergencies', [GovtAdminDashboardController::class, 'emergencies'])->name('emergencies.index');
+
+        // Disease Monitoring
+        Route::get('/disease-monitoring', [\App\Http\Controllers\Govt\DiseaseMonitoringController::class, 'index'])->name('disease_monitoring.index');
+        Route::post('/disease-monitoring/{id}/status', [\App\Http\Controllers\Govt\DiseaseMonitoringController::class, 'updateStatus'])->name('disease_monitoring.update_status');
     });
 
     // ==========================================
