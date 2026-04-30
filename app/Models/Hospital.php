@@ -31,4 +31,14 @@ class Hospital extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function bills()
+    {
+        return $this->hasMany(Bill::class);
+    }
+
+    public function insuranceClaims()
+    {
+        return $this->hasMany(InsuranceClaim::class);
+    }
 }

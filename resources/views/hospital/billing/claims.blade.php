@@ -5,7 +5,21 @@
 @section('content')
 <div class="space-y-6">
     <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold text-gray-800">Insurance Claims</h2>
+        <h2 class="text-2xl font-bold text-gray-800">Billing & Insurance</h2>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <a href="{{ route('hospital.billing.index') }}" 
+                class="{{ request()->routeIs('hospital.billing.index') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Hospital Bills
+            </a>
+            <a href="{{ route('hospital.billing.claims') }}" 
+                class="{{ request()->routeIs('hospital.billing.claims') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Insurance Claims
+            </a>
+        </nav>
     </div>
 
     <!-- Filters -->
