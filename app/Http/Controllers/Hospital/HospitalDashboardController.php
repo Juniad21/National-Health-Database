@@ -28,13 +28,23 @@ class HospitalDashboardController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
         
+        // Billing Statistics
+        $totalRevenue = \App\Models\Bill::where('hospital_id', $hospital->id)->sum('paid_amount');
+        $pendingBillsCount = \App\Models\Bill::where('hospital_id', $hospital->id)->where('payment_status', '!=', 'paid')->count();
+        $activeClaimsCount = \App\Models\InsuranceClaim::where('hospital_id', $hospital->id)->where('claim_status', 'pending')->count();
+        
         AuditLogService::logHospitalAction('hospital dashboard viewed');
         
         return view('hospital.dashboard', [
             'hospital' => $hospital,
             'emergencies' => $emergencies,
             'resources' => $resources,
-            'pendingLabs' => $pendingLabs
+            'pendingLabs' => $pendingLabs,
+            'stats' => [
+                'revenue' => $totalRevenue,
+                'pending_bills' => $pendingBillsCount,
+                'active_claims' => $activeClaimsCount
+            ]
         ]);
     }
 
