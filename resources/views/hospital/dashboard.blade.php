@@ -4,7 +4,8 @@
 
 @section('emergency_banner')
     @php
-        $activeEmergency = $emergencies->where('status', 'active')->first();
+        // Show banner for any emergency that hasn't had an ambulance assigned or been resolved
+        $activeEmergency = $emergencies->whereIn('status', ['Sent', 'Accepted'])->first();
     @endphp
 
     @if($activeEmergency)
