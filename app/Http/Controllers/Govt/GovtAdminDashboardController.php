@@ -76,4 +76,20 @@ class GovtAdminDashboardController extends Controller
 
         return view('govt_admin.dashboard', compact('stats', 'pendingDoctors', 'hospitals', 'alerts'));
     }
+
+    public function emergencies()
+    {
+        $emergencies = \App\Models\Emergency::with(['patient', 'hospital'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $stats = [
+            'total' => $emergencies->count(),
+            'active' => $emergencies->whereNotIn('status', ['Resolved', 'Cancelled', 'Rejected'])->count(),
+            'resolved' => $emergencies->where('status', 'Resolved')->count(),
+            'rejected' => $emergencies->where('status', 'Rejected')->count(),
+        ];
+
+        return view('govt_admin.emergencies.index', compact('emergencies', 'stats'));
+    }
 }
