@@ -56,6 +56,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/emergency/trigger', [PatientDashboardController::class, 'triggerEmergency'])->name('emergency.trigger');
         Route::get('/emergency/{id}', [PatientDashboardController::class, 'viewEmergency'])->name('emergency.view');
         Route::post('/evaluation', [PatientDashboardController::class, 'storeEvaluation'])->name('evaluation.store');
+
+        // Profile Management
+        Route::get('/profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'update'])->name('profile.update');
+
+        // Health Analytics
+        Route::get('/health-analytics', [\App\Http\Controllers\Patient\PatientProfileController::class, 'healthAnalytics'])->name('health_analytics');
+        Route::post('/health-metrics', [\App\Http\Controllers\Patient\PatientProfileController::class, 'storeMetric'])->name('health_metrics.store');
+        Route::delete('/health-metrics/{id}', [\App\Http\Controllers\Patient\PatientProfileController::class, 'destroyMetric'])->name('health_metrics.destroy');
     });
 
     // ==========================================
