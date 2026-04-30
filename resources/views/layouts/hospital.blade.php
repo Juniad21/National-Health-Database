@@ -57,17 +57,21 @@
                 </span>
             </a>
 
+            <a href="{{ route('hospital.disease_reports.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('hospital.disease_reports.*') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                Disease Reports
+            </a>
+
             <a href="{{ route('hospital.billing.index') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('hospital.billing.*') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
-                    </path>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                 </svg>
                 Billing & Insurance
             </a>
-
             <a href="{{ route('hospital.logs') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('hospital.logs') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
