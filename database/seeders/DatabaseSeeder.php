@@ -25,6 +25,14 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // 0. Create Government Admin
+        User::create([
+            'email' => 'admin@govt.bd',
+            'password' => Hash::make('12345678'),
+            'role' => 'govt_admin',
+            'nid' => '0000000000',
+        ]);
+
         // 1. Generate 100 Valid NIDs
         for ($i = 0; $i < 100; $i++) {
             ValidNid::create([
