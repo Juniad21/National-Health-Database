@@ -506,5 +506,13 @@ class DatabaseSeeder extends Seeder
             'lab_test_catalog_id' => 1,
             'status' => 'pending'
         ]);
+
+        // --- Add Ambulance Staff ---
+        User::create([
+            'email' => 'ambulance@staff.bd',
+            'password' => Hash::make('12345678'),
+            'role' => 'ambulance',
+            'nid' => '1112223334',
+        ]);
     }
 }

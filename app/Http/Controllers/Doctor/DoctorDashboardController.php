@@ -247,4 +247,38 @@ class DoctorDashboardController extends Controller
 
         return redirect()->back()->with('success', $message);
     }
+
+    public function viewEmergency($id)
+    {
+        $emergency = \App\Models\Emergency::with('patient')->findOrFail($id);
+        $doctor = Auth::user()->doctor;
+
+        if ($emergency->assigned_doctor_id !== $doctor->id) {
+            return redirect()->back()->with('error', 'Unauthorized access.');
+        }
+
+        return view('doctor.emergency_view', compact('emergency'));
+    }
+
+    public function storeTriage(Request $request, $id)
+    {
+        $emergency = \App\Models\Emergency::findOrFail($id);
+        $doctor = Auth::user()->doctor;
+
+        if ($emergency->assigned_doctor_id !== $doctor->id) {
+            return redirect()->back()->with('error', 'Unauthorized access.');
+        }
+
+        $validated = $request->validate([
+            'notes' => 'required|string',
+            'severity' => 'required|in:low,medium,high,critical',
+        ]);
+
+        $emergency->update([
+            'symptoms' => $emergency->symptoms . "\n\n--- Triage Notes ---\n" . $validated['notes'],
+            'severity' => $validated['severity'],
+        ]);
+
+        return redirect()->back()->with('success', 'Triage notes added successfully.');
+    }
 }

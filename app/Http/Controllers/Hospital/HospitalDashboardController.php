@@ -99,35 +99,112 @@ class HospitalDashboardController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function dispatchAmbulance(Request $request, $id)
+    public function emergencies()
+    {
+        $hospital = Auth::user()->hospital;
+        $emergencies = \App\Models\Emergency::where('hospital_id', $hospital->id)
+            ->orWhereNull('hospital_id') // Show sent alerts that aren't assigned yet
+            ->with('patient')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('hospital.emergencies.index', compact('emergencies'));
+    }
+
+    public function viewEmergency($id)
+    {
+        $emergency = \App\Models\Emergency::with(['patient', 'doctor', 'ambulanceStaff'])->findOrFail($id);
+        $hospital = Auth::user()->hospital;
+
+        // If assigned to another hospital, unauthorized
+        if ($emergency->hospital_id && $emergency->hospital_id !== $hospital->id) {
+            return redirect()->back()->with('error', 'Unauthorized access.');
+        }
+
+        $doctors = \App\Models\Doctor::where('hospital_id', $hospital->id)->get();
+        $ambulances = \App\Models\User::where('role', 'ambulance')->get(); 
+
+        return view('hospital.emergencies.view', compact('emergency', 'doctors', 'ambulances'));
+    }
+
+    public function acceptEmergency(Request $request, $id)
     {
         $emergency = \App\Models\Emergency::findOrFail($id);
         $hospital = Auth::user()->hospital;
 
-        if ($emergency->hospital_id !== $hospital->id) {
-            return redirect()->back()->with('error', 'Unauthorized action.');
-        }
+        $emergency->update([
+            'hospital_id' => $hospital->id,
+            'status' => 'Accepted',
+            'accepted_at' => now(),
+            'accepted_by' => Auth::id(),
+        ]);
 
-        $emergency->update(['status' => 'dispatched']);
+        \App\Services\AuditLogService::logAction(
+            action: 'emergency accepted',
+            description: "Hospital accepted emergency alert from {$emergency->patient->last_name}",
+            module: 'emergency',
+            severity: 'high',
+            targetType: \App\Models\Emergency::class,
+            targetId: $emergency->id
+        );
 
-        AuditLogService::logAction('emergency status updated', "Dispatched ambulance for emergency #{$id}", \App\Models\Emergency::class, $id);
+        return redirect()->back()->with('success', 'Emergency accepted successfully.');
+    }
 
-        return redirect()->back()->with('success', 'Ambulance dispatched!');
+    public function rejectEmergency(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string',
+        ]);
+
+        $emergency = \App\Models\Emergency::findOrFail($id);
+        
+        $emergency->update([
+            'status' => 'Rejected',
+            'rejection_reason' => $validated['rejection_reason'],
+        ]);
+
+        return redirect()->back()->with('success', 'Emergency rejected.');
+    }
+
+    public function dispatchAmbulance(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'ambulance_id' => 'required|exists:users,id',
+        ]);
+
+        $emergency = \App\Models\Emergency::findOrFail($id);
+        $emergency->update([
+            'assigned_ambulance_id' => $validated['ambulance_id'],
+            'status' => 'Ambulance Assigned',
+        ]);
+
+        return redirect()->back()->with('success', 'Ambulance assigned successfully.');
+    }
+
+    public function assignDoctor(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'doctor_id' => 'required|exists:doctors,id',
+        ]);
+
+        $emergency = \App\Models\Emergency::findOrFail($id);
+        $emergency->update([
+            'assigned_doctor_id' => $validated['doctor_id'],
+        ]);
+
+        return redirect()->back()->with('success', 'Doctor assigned successfully.');
     }
 
     public function resolveEmergency(Request $request, $id)
     {
         $emergency = \App\Models\Emergency::findOrFail($id);
-        $hospital = Auth::user()->hospital;
+        $emergency->update([
+            'status' => 'Resolved',
+            'resolved_at' => now(),
+            'resolved_by' => Auth::id(),
+        ]);
 
-        if ($emergency->hospital_id !== $hospital->id) {
-            return redirect()->back()->with('error', 'Unauthorized action.');
-        }
-
-        $emergency->update(['status' => 'resolved']);
-
-        AuditLogService::logAction('emergency status updated', "Resolved emergency #{$id}", \App\Models\Emergency::class, $id);
-
-        return redirect()->back()->with('success', 'Emergency resolved!');
+        return redirect()->back()->with('success', 'Emergency marked as resolved.');
     }
 }

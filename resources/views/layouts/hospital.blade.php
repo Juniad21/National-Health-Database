@@ -43,6 +43,20 @@
                 Dashboard
             </a>
 
+            <a href="{{ route('hospital.emergencies.index') }}"
+                class="flex items-center justify-between px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('hospital.emergencies.*') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span>Emergency Alerts</span>
+                </div>
+                <span class="flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+            </a>
+
             <a href="{{ route('hospital.billing.index') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('hospital.billing.*') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
