@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'National Health DB') }} - Hospital Dashboard</title>
+    <title>{{ config('app.name', 'National Health DB') }} - Govt Admin</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -21,9 +21,6 @@
 
 <body class="font-sans antialiased text-gray-800 bg-gray-50 flex h-screen overflow-hidden">
 
-    <!-- Emergency Banner Container for Flashing Alerts -->
-    @yield('emergency_banner')
-
     <!-- Sidebar -->
     <aside class="w-64 bg-indigo-900 text-white flex flex-col shadow-xl hidden md:flex">
         <div class="h-20 flex items-center justify-center border-b border-indigo-800">
@@ -32,28 +29,6 @@
         </div>
 
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            <a href="{{ route('hospital.dashboard') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('hospital.dashboard') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                    </path>
-                </svg>
-                Dashboard
-            </a>
-
-            <a href="{{ route('hospital.billing.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('hospital.billing.*') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
-                    </path>
-                </svg>
-                Billing & Insurance
-            </a>
-
             <a href="{{ route('govt_admin.dashboard') }}"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('govt_admin.dashboard') ? 'bg-indigo-800 text-white font-semibold shadow-md' : 'text-indigo-100 hover:bg-indigo-800 hover:text-white' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -63,6 +38,26 @@
                     </path>
                 </svg>
                 Govt Health Admin
+            </a>
+
+            <!-- Placeholder for other items -->
+            <div class="pt-4 pb-2 px-4 text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+                Administration
+            </div>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                Doctor Verifications
+            </a>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                Hospital Monitoring
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                National Analytics
             </a>
         </nav>
 
@@ -88,14 +83,12 @@
 
         <!-- Top Navbar -->
         <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 shadow-sm">
-            <h2 class="text-xl font-semibold text-gray-700">@yield('header_title', 'Hospital Admin')</h2>
+            <h2 class="text-xl font-semibold text-gray-700">@yield('header_title', 'Govt Health Administration')</h2>
 
             <div class="flex items-center gap-4">
                 <div class="flex flex-col items-end">
-                    <span
-                        class="text-sm font-semibold text-gray-800">{{ Auth::user()->hospital->name ?? 'Hospital' }}</span>
-                    <span
-                        class="text-xs text-indigo-600 font-medium tracking-wide border px-2 py-0.5 rounded-full bg-indigo-50 border-indigo-100 mt-1">Facility</span>
+                    <span class="text-sm font-semibold text-gray-800">{{ Auth::user()->name ?? 'Admin' }}</span>
+                    <span class="text-xs text-indigo-600 font-medium tracking-wide border px-2 py-0.5 rounded-full bg-indigo-50 border-indigo-100 mt-1">DGHS Authority</span>
                 </div>
             </div>
         </header>
@@ -103,30 +96,6 @@
         <!-- Page Content -->
         <main class="flex-1 overflow-y-auto bg-gray-50/50 p-8">
             <div class="max-w-7xl mx-auto space-y-6">
-                <!-- Notifications -->
-                @if (session('success'))
-                    <div class="px-6 py-4 bg-teal-50 border-l-4 border-teal-500 text-teal-800 rounded-r-xl shadow-sm rounded-l-md"
-                        role="alert">
-                        {{ session('success') }}
-                    </div>
-                @endif
-                @if (session('error'))
-                    <div class="px-6 py-4 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-r-xl shadow-sm rounded-l-md"
-                        role="alert">
-                        {{ session('error') }}
-                    </div>
-                @endif
-                @if ($errors->any())
-                    <div class="px-6 py-4 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-r-xl shadow-sm rounded-l-md"
-                        role="alert">
-                        <ul class="list-disc pl-5">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 @yield('content')
             </div>
         </main>

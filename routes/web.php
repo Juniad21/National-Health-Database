@@ -9,6 +9,7 @@ use App\Http\Controllers\Hospital\HospitalDashboardController;
 use App\Http\Controllers\Hospital\HospitalAuditLogController;
 use App\Http\Controllers\Hospital\HospitalBillingController;
 use App\Http\Controllers\Admin\DuplicateRecordController;
+use App\Http\Controllers\Govt\GovtAdminDashboardController;
 
 // 1. Redirect Home to Login
 Route::get('/', function () {
@@ -23,6 +24,8 @@ Route::get('/dashboard', function () {
         return redirect()->route('doctor.dashboard');
     } elseif ($role === 'hospital') {
         return redirect()->route('hospital.dashboard');
+    } elseif ($role === 'govt_admin') {
+        return redirect()->route('govt_admin.dashboard');
     }
 
     return redirect()->route('patient.dashboard');
@@ -92,6 +95,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/duplicates', [DuplicateRecordController::class, 'index'])->name('duplicates.index');
         Route::get('/duplicates/compare/{id1}/{id2}', [DuplicateRecordController::class, 'compare'])->name('duplicates.compare');
         Route::post('/duplicates/merge', [DuplicateRecordController::class, 'merge'])->name('duplicates.merge');
+    });
+
+    // ==========================================
+    // GOVT ADMIN ROUTES
+    // ==========================================
+    Route::prefix('govt-admin')->name('govt_admin.')->group(function () {
+        Route::get('/dashboard', [GovtAdminDashboardController::class, 'index'])->name('dashboard');
     });
 });
 
