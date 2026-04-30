@@ -3,34 +3,70 @@
 namespace App\Http\Controllers\Govt;
 
 use App\Http\Controllers\Controller;
+use App\Models\Doctor;
+use App\Models\Hospital;
+use App\Models\Patient;
+use App\Models\InsuranceClaim;
+use App\Models\HospitalResource;
 use Illuminate\Http\Request;
 
 class GovtAdminDashboardController extends Controller
 {
     public function index()
     {
-        // Mock data for the dashboard
+        // Real data from the database
         $stats = [
-            'registered_doctors' => 1240,
-            'pending_verifications' => 85,
-            'registered_hospitals' => 120,
-            'hospitals_under_review' => 12,
-            'active_patients' => '4.2M',
-            'claims_processed' => '850K',
-            'reported_incidents' => 24
+            'registered_doctors' => Doctor::count(),
+            'pending_verifications' => 0, // No status field in schema
+            'registered_hospitals' => Hospital::count(),
+            'hospitals_under_review' => 0, // No status field in schema
+            'active_patients' => Patient::count(),
+            'claims_processed' => InsuranceClaim::count(),
+            'reported_incidents' => 0
         ];
 
-        $pendingDoctors = [
-            ['name' => 'Dr. Arif Rahman', 'license' => 'BMDC-8923', 'specialty' => 'Cardiology', 'hospital' => 'Square Hospital', 'date' => '2026-04-28', 'status' => 'Pending'],
-            ['name' => 'Dr. Nusrat Jahan', 'license' => 'BMDC-4567', 'specialty' => 'Pediatrics', 'hospital' => 'Evercare Hospital', 'date' => '2026-04-29', 'status' => 'Needs Review'],
-            ['name' => 'Dr. Kamal Hossain', 'license' => 'BMDC-1234', 'specialty' => 'Neurology', 'hospital' => 'United Hospital', 'date' => '2026-04-27', 'status' => 'Pending'],
-        ];
+        // Fetch some doctors for the verification queue (simulated as latest entries)
+        $pendingDoctors = Doctor::with('hospital')->latest()->take(3)->get()->map(function ($doctor) {
+            return [
+                'name' => "Dr. " . $doctor->first_name . " " . $doctor->last_name,
+                'license' => $doctor->bmdc_number,
+                'specialty' => $doctor->specialty,
+                'hospital' => $doctor->hospital->name ?? 'N/A',
+                'date' => $doctor->created_at->format('Y-m-d'),
+                'status' => 'Pending'
+            ];
+        });
 
-        $hospitals = [
-            ['name' => 'Square Hospital', 'district' => 'Dhaka', 'type' => 'Private', 'beds' => '85%', 'icu' => '2/20', 'vent' => '5/10', 'blood' => 'Normal', 'compliance' => 'Normal'],
-            ['name' => 'Evercare Hospital', 'district' => 'Dhaka', 'type' => 'Private', 'beds' => '92%', 'icu' => '0/15', 'vent' => '1/8', 'blood' => 'Warning', 'compliance' => 'Warning'],
-            ['name' => 'DMCH', 'district' => 'Dhaka', 'type' => 'Government', 'beds' => '98%', 'icu' => '0/50', 'vent' => '0/20', 'blood' => 'Critical', 'compliance' => 'Normal'],
-        ];
+        // Fetch hospital resource data
+        $hospitals = Hospital::with('doctors')->take(3)->get()->map(function ($hospital) {
+            $resources = HospitalResource::where('hospital_id', $hospital->id)->get();
+            $beds = $resources->where('resource_type', 'General Bed')->first();
+            $icu = $resources->where('resource_type', 'ICU Unit')->first();
+            $vent = $resources->where('resource_type', 'Ventilator')->first();
+            $blood = $resources->where('resource_type', 'Blood Bank')->first();
+
+            $bedOcc = $beds ? round(($beds->currently_in_use / $beds->total_capacity) * 100) . '%' : '0%';
+            $icuStat = $icu ? ($icu->total_capacity - $icu->currently_in_use) . '/' . $icu->total_capacity : '0/0';
+            $ventStat = $vent ? ($vent->total_capacity - $vent->currently_in_use) . '/' . $vent->total_capacity : '0/0';
+            
+            $bloodStatus = 'Normal';
+            if ($blood) {
+                $ratio = $blood->currently_in_use / $blood->total_capacity;
+                if ($ratio < 0.2) $bloodStatus = 'Critical';
+                elseif ($ratio < 0.5) $bloodStatus = 'Warning';
+            }
+
+            return [
+                'name' => $hospital->name,
+                'district' => explode(',', $hospital->address)[0] ?? 'N/A',
+                'type' => str_contains($hospital->name, 'College') || str_contains($hospital->name, 'DMCH') ? 'Government' : 'Private',
+                'beds' => $bedOcc,
+                'icu' => $icuStat,
+                'vent' => $ventStat,
+                'blood' => $bloodStatus,
+                'compliance' => 'Normal'
+            ];
+        });
 
         $alerts = [
             ['title' => 'Critical ICU Shortage', 'target' => 'Evercare Hospital', 'severity' => 'Critical', 'time' => '10 mins ago'],
