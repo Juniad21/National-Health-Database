@@ -94,6 +94,16 @@ class PatientDashboardController extends Controller
     public function medicalRecords()
     {
         $patient = Auth::user()->patient;
+
+        \App\Services\AuditLogService::logAction(
+            action: 'patient record viewed',
+            description: "Patient viewed their own medical records",
+            module: 'medical',
+            severity: 'low',
+            targetType: \App\Models\Patient::class,
+            targetId: $patient->id
+        );
+
         $allRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
             ->with('doctor')
             ->orderBy('date', 'desc')
@@ -143,6 +153,15 @@ class PatientDashboardController extends Controller
             'payment_status' => 'paid',
         ]);
 
+        \App\Services\AuditLogService::logAction(
+            action: 'payment recorded',
+            description: "Patient paid bill #{$bill->bill_number} of amount {$bill->total_amount}",
+            module: 'billing',
+            severity: 'medium',
+            targetType: \App\Models\Bill::class,
+            targetId: $bill->id
+        );
+
         return redirect()->back()->with('success', 'Payment successful! Your bill has been marked as paid.');
     }
 
@@ -173,6 +192,15 @@ class PatientDashboardController extends Controller
         }
 
         $accessRequest->update(['status' => $validated['status']]);
+
+        \App\Services\AuditLogService::logAction(
+            action: 'compliance status changed',
+            description: "Patient updated consent status to {$validated['status']} for Dr. {$accessRequest->doctor->first_name}",
+            module: 'compliance',
+            severity: 'medium',
+            targetType: \App\Models\AccessRequest::class,
+            targetId: $accessRequest->id
+        );
 
         return redirect()->route('patient.consents')->with('success', 'Access permission updated successfully!');
     }
@@ -257,13 +285,22 @@ class PatientDashboardController extends Controller
     {
         $patient = Auth::user()->patient;
 
-        \App\Models\Emergency::create([
+        $emergency = \App\Models\Emergency::create([
             'patient_id' => $patient->id,
             'hospital_id' => null,
             'status' => 'active',
             'latitude' => null,
             'longitude' => null,
         ]);
+
+        \App\Services\AuditLogService::logAction(
+            action: 'emergency triggered',
+            description: "Patient triggered an emergency alert",
+            module: 'emergency',
+            severity: 'high',
+            targetType: \App\Models\Emergency::class,
+            targetId: $emergency->id
+        );
 
         return redirect()->back()->with('success', 'Emergency alert triggered! Help is on the way.');
     }

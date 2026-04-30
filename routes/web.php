@@ -102,6 +102,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==========================================
     Route::prefix('govt-admin')->name('govt_admin.')->group(function () {
         Route::get('/dashboard', [GovtAdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/audit-logs', [\App\Http\Controllers\Govt\AuditLogController::class, 'index'])->name('audit_logs');
+        Route::get('/audit-logs/export', [\App\Http\Controllers\Govt\AuditLogController::class, 'exportCsv'])->name('audit_logs.export');
     });
 });
 

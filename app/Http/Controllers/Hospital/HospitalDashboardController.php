@@ -33,7 +33,7 @@ class HospitalDashboardController extends Controller
         $pendingBillsCount = \App\Models\Bill::where('hospital_id', $hospital->id)->where('payment_status', '!=', 'paid')->count();
         $activeClaimsCount = \App\Models\InsuranceClaim::where('hospital_id', $hospital->id)->where('claim_status', 'pending')->count();
         
-        AuditLogService::logHospitalAction('hospital dashboard viewed');
+        AuditLogService::logAction('hospital dashboard viewed');
         
         return view('hospital.dashboard', [
             'hospital' => $hospital,
@@ -66,7 +66,7 @@ class HospitalDashboardController extends Controller
             'result_summary' => $validated['result_summary'],
         ]);
 
-        AuditLogService::logHospitalAction('lab result uploaded', "Uploaded result for lab order #{$id}", \App\Models\LabOrder::class, $id);
+        AuditLogService::logAction('lab result uploaded', "Uploaded result for lab order #{$id}", \App\Models\LabOrder::class, $id);
 
         return redirect()->back()->with('success', 'Lab order marked as completed!');
     }
@@ -94,7 +94,7 @@ class HospitalDashboardController extends Controller
             $actionWord = 'attempted to update';
         }
 
-        AuditLogService::logHospitalAction('hospital resource updated', ucfirst($actionWord) . " resource {$resource->resource_type}", \App\Models\HospitalResource::class, $id);
+        AuditLogService::logAction('hospital resource updated', ucfirst($actionWord) . " resource {$resource->resource_type}", \App\Models\HospitalResource::class, $id);
 
         return response()->json(['success' => true]);
     }
@@ -110,7 +110,7 @@ class HospitalDashboardController extends Controller
 
         $emergency->update(['status' => 'dispatched']);
 
-        AuditLogService::logHospitalAction('emergency status updated', "Dispatched ambulance for emergency #{$id}", \App\Models\Emergency::class, $id);
+        AuditLogService::logAction('emergency status updated', "Dispatched ambulance for emergency #{$id}", \App\Models\Emergency::class, $id);
 
         return redirect()->back()->with('success', 'Ambulance dispatched!');
     }
@@ -126,7 +126,7 @@ class HospitalDashboardController extends Controller
 
         $emergency->update(['status' => 'resolved']);
 
-        AuditLogService::logHospitalAction('emergency status updated', "Resolved emergency #{$id}", \App\Models\Emergency::class, $id);
+        AuditLogService::logAction('emergency status updated', "Resolved emergency #{$id}", \App\Models\Emergency::class, $id);
 
         return redirect()->back()->with('success', 'Emergency resolved!');
     }
