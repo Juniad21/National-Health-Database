@@ -552,6 +552,19 @@ class DatabaseSeeder extends Seeder
                     'is_active' => true,
                 ]);
             }
+
+            // Seed Blood Stock
+            foreach (\App\Models\BloodStock::getBloodGroups() as $group) {
+                \App\Models\BloodStock::create([
+                    'hospital_id' => $hospital->id,
+                    'hospital_name' => $hospital->name,
+                    'district' => $hospital->address,
+                    'blood_group' => $group,
+                    'available_units' => random_int(5, 50),
+                    'minimum_required_units' => 10,
+                    'last_updated_by' => 1, // Admin
+                ]);
+            }
         }
 
         // --- Specific Test Ambulance ---

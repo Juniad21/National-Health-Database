@@ -12,10 +12,24 @@ return new class extends Migration {
     {
         Schema::create('blood_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hospital_id')->constrained('users')->onDelete('cascade');
-            $table->string('blood_group_needed');
-            $table->enum('urgency_level', ['low', 'medium', 'high', 'critical']);
-            $table->enum('status', ['active', 'fulfilled', 'cancelled'])->default('active');
+            $table->foreignId('requesting_hospital_id')->constrained('hospitals')->cascadeOnDelete();
+            $table->string('requesting_hospital_name')->nullable();
+            $table->string('district')->nullable();
+            $table->foreignId('patient_id')->nullable()->constrained('patients')->nullOnDelete();
+            $table->string('blood_group');
+            $table->integer('requested_units');
+            $table->enum('urgency_level', ['Low', 'Medium', 'High', 'Critical']);
+            $table->text('request_reason')->nullable();
+            $table->dateTime('required_by')->nullable();
+            $table->enum('status', ['Pending', 'Under Review', 'Matched', 'Approved', 'Partially Approved', 'Rejected', 'Fulfilled', 'Cancelled'])->default('Pending');
+            $table->foreignId('matched_hospital_id')->nullable()->constrained('hospitals')->nullOnDelete();
+            $table->string('matched_hospital_name')->nullable();
+            $table->integer('approved_units')->nullable();
+            $table->text('admin_note')->nullable();
+            $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('reviewed_at')->nullable();
+            $table->timestamp('fulfilled_at')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
         });
     }
