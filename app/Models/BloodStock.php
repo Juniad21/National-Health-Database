@@ -21,6 +21,8 @@ class BloodStock extends Model
         'notes',
     ];
 
+    protected $appends = ['status', 'status_color', 'surplus'];
+
     public static function getBloodGroups()
     {
         return ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -64,5 +66,10 @@ class BloodStock extends Model
     public function isRare()
     {
         return in_array($this->blood_group, self::getRareBloodGroups());
+    }
+
+    public function getSurplusAttribute()
+    {
+        return max(0, $this->available_units - $this->minimum_required_units);
     }
 }

@@ -58,7 +58,9 @@ class NationalBloodBankController extends Controller
             ->filter(fn($s) => $s->status === 'Low Stock' || $s->status === 'Out of Stock')
             ->take(10);
 
-        return view('govt_admin.blood_bank.index', compact('stats', 'stocks', 'requests', 'bloodGroups', 'lowStockAlerts'));
+        $allHospitals = Hospital::orderBy('name')->get();
+
+        return view('govt_admin.blood_bank.index', compact('stats', 'stocks', 'requests', 'bloodGroups', 'lowStockAlerts', 'allHospitals'));
     }
 
     public function updateRequestStatus(Request $request, $id)
@@ -145,5 +147,70 @@ class NationalBloodBankController extends Controller
         $bloodRequest->update(['admin_note' => $validated['admin_note']]);
 
         return redirect()->back()->with('success', 'Admin note updated.');
+    }
+
+    public function transferStock(Request $request)
+    {
+        $validated = $request->validate([
+            'source_hospital_id' => 'required|exists:hospitals,id',
+            'destination_hospital_id' => 'required|exists:hospitals,id|different:source_hospital_id',
+            'blood_group' => 'required|string',
+            'transfer_units' => 'required|integer|min:1'
+        ]);
+
+        $sourceStock = BloodStock::where('hospital_id', $validated['source_hospital_id'])
+            ->where('blood_group', $validated['blood_group'])
+            ->firstOrFail();
+
+        if ($sourceStock->available_units < $validated['transfer_units']) {
+            return redirect()->back()->with('error', 'Source hospital does not have enough units available.');
+        }
+
+        // Deduct from source
+        $sourceStock->decrement('available_units', $validated['transfer_units']);
+
+        // Add to destination
+        $destinationStock = BloodStock::firstOrCreate(
+            ['hospital_id' => $validated['destination_hospital_id'], 'blood_group' => $validated['blood_group']],
+            [
+                'hospital_name' => Hospital::find($validated['destination_hospital_id'])->name,
+                'available_units' => 0,
+                'minimum_required_units' => 10,
+            ]
+        );
+        $destinationStock->increment('available_units', $validated['transfer_units']);
+
+        // Create an audit trail record in requests
+        $sourceHospital = Hospital::find($validated['source_hospital_id']);
+        $destinationHospital = Hospital::find($validated['destination_hospital_id']);
+
+        $requestRecord = BloodRequest::create([
+            'requesting_hospital_id' => $destinationHospital->id,
+            'requesting_hospital_name' => $destinationHospital->name,
+            'district' => 'Dhaka', // Keeping it simple for the audit trail
+            'blood_group' => $validated['blood_group'],
+            'requested_units' => $validated['transfer_units'],
+            'urgency_level' => 'High',
+            'request_reason' => 'Government Directed Surplus Transfer',
+            'status' => 'Fulfilled',
+            'matched_hospital_id' => $sourceHospital->id,
+            'matched_hospital_name' => $sourceHospital->name,
+            'approved_units' => $validated['transfer_units'],
+            'admin_note' => 'Manual surplus transfer executed by Govt Admin.',
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+            'fulfilled_at' => now(),
+        ]);
+
+        AuditLogService::logAction(
+            "manual surplus transfer",
+            "Transferred {$validated['transfer_units']} units of {$validated['blood_group']} from {$sourceHospital->name} to {$destinationHospital->name}",
+            'blood_bank',
+            'high',
+            BloodRequest::class,
+            $requestRecord->id
+        );
+
+        return redirect()->back()->with('success', "Successfully transferred {$validated['transfer_units']} units of {$validated['blood_group']} to {$destinationHospital->name}.");
     }
 }

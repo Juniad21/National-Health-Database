@@ -4,10 +4,10 @@
 
 @section('content')
 <div class="space-y-8" x-data="{ 
-    showMatchModal: false, 
-    selectedRequest: null, 
+    showTransferModal: false, 
+    selectedSourceStock: null, 
     showNoteModal: false,
-    matchingHospitals: []
+    selectedRequest: null
 }">
     
     <!-- Summary Stats -->
@@ -73,8 +73,9 @@
                                 <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Facility</th>
                                 <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Grp</th>
                                 <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Units</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Surplus</th>
                                 <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Update</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -90,11 +91,18 @@
                                 <td class="px-6 py-4 text-center font-black text-gray-800">{{ $stock->available_units }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="px-2 py-0.5 bg-{{ $stock->status_color }}-100 text-{{ $stock->status_color }}-600 rounded-full text-[9px] font-black uppercase tracking-tighter">
-                                        {{ $stock->status }}
+                                        {{ $stock->surplus > 0 ? $stock->surplus . ' Surplus' : $stock->status }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-[10px] font-bold text-gray-400">
                                     {{ $stock->updated_at->diffForHumans() }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    @if($stock->surplus > 0)
+                                        <button @click="selectedSourceStock = {{ json_encode($stock) }}; selectedSourceStock.hospital_name = '{{ $stock->hospital->name }}'; showTransferModal = true" class="px-3 py-1 bg-emerald-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">
+                                            Transfer
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach
@@ -150,9 +158,11 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1">
                                         @if(in_array($req->status, ['Pending', 'Under Review']))
-                                        <button @click="selectedRequest = {{ json_encode($req) }}; showMatchModal = true; fetchMatches({{ $req->id }}, '{{ $req->blood_group }}', '{{ $req->district }}', {{ $req->requesting_hospital_id }})" class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100">
-                                            Match
-                                        </button>
+                                        <form action="{{ route('govt_admin.blood_bank.request.status', $req->id) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="status" value="Under Review">
+                                            <button type="submit" class="px-3 py-1 bg-yellow-50 text-yellow-600 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-yellow-100 transition-all">Review</button>
+                                        </form>
                                         @endif
                                         <button @click="selectedRequest = {{ json_encode($req) }}; showNoteModal = true" class="p-1.5 text-gray-400 hover:text-indigo-600 transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -228,76 +238,52 @@
         </div>
     </div>
 
-    <!-- Match Modal -->
-    <div x-show="showMatchModal" class="fixed inset-0 z-[100] overflow-y-auto" style="display: none;" x-cloak>
+    <!-- Transfer Modal -->
+    <div x-show="showTransferModal" class="fixed inset-0 z-[100] overflow-y-auto" style="display: none;" x-cloak>
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="showMatchModal" @click="showMatchModal = false" class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
+            <div x-show="showTransferModal" @click="showTransferModal = false" class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>&#8203;
-            <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-8">
-                <div class="mb-6 flex justify-between items-start">
+            <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-8">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-black text-gray-800 uppercase tracking-tight leading-none mb-1">Surplus Transfer</h3>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Manual Stock Reallocation</p>
+                </div>
+
+                <div class="mb-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Source Facility</p>
+                    <p class="text-lg font-black text-emerald-800" x-text="selectedSourceStock?.hospital_name"></p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="px-2 py-0.5 bg-white text-emerald-600 rounded-lg text-xs font-black shadow-sm" x-text="selectedSourceStock?.blood_group"></span>
+                        <span class="text-xs font-bold text-emerald-700" x-text="selectedSourceStock?.surplus + ' Bags Available to Transfer'"></span>
+                    </div>
+                </div>
+
+                <form action="{{ route('govt_admin.blood_bank.transfer') }}" method="POST" class="space-y-5">
+                    @csrf
+                    <input type="hidden" name="source_hospital_id" :value="selectedSourceStock?.hospital_id">
+                    <input type="hidden" name="blood_group" :value="selectedSourceStock?.blood_group">
+                    
                     <div>
-                        <h3 class="text-2xl font-black text-gray-800 uppercase tracking-tight leading-none mb-1">Strategic Allocation</h3>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Resource Matching Hub</p>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Destination Hospital</label>
+                        <select name="destination_hospital_id" required class="w-full rounded-2xl border-gray-100 bg-gray-50 text-sm font-black focus:ring-emerald-500 py-3">
+                            <option value="">Select Destination...</option>
+                            @foreach($allHospitals as $hosp)
+                                <option value="{{ $hosp->id }}" x-show="selectedSourceStock?.hospital_id !== {{ $hosp->id }}">{{ $hosp->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="text-right" x-show="selectedRequest">
-                        <span class="px-3 py-1 bg-red-50 text-red-600 rounded-xl font-black text-sm" x-text="selectedRequest?.blood_group"></span>
-                        <p class="text-[9px] font-black text-gray-400 uppercase mt-1" x-text="(selectedRequest?.requested_units || 0) + ' Units Requested'"></p>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Units to Transfer</label>
+                        <input type="number" name="transfer_units" required min="1" :max="selectedSourceStock?.surplus" class="w-full rounded-2xl border-gray-100 bg-gray-50 text-sm font-black focus:ring-emerald-500 py-3" placeholder="Enter number of bags...">
+                        <p class="text-[9px] text-gray-400 mt-1 font-bold ml-1">Cannot exceed the source hospital's surplus.</p>
                     </div>
-                </div>
 
-                <div class="mb-8 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Matching Rule Engine</p>
-                    <p class="text-xs font-bold text-indigo-800 leading-relaxed">System is analyzing facilities with <span x-text="selectedRequest?.blood_group" class="font-black text-indigo-600"></span> availability, prioritized by proximity (District: <span x-text="selectedRequest?.district" class="font-black text-indigo-600"></span>) and stock depth.</p>
-                </div>
-
-                <div class="max-h-64 overflow-y-auto mb-6 pr-2 custom-scrollbar">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="sticky top-0 bg-white shadow-sm border-b border-gray-100">
-                                <th class="pb-3 text-[9px] font-black text-gray-400 uppercase tracking-widest">Hospital & District</th>
-                                <th class="pb-3 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Available</th>
-                                <th class="pb-3 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            <template x-for="match in matchingHospitals" :key="match.id">
-                                <tr>
-                                    <td class="py-4">
-                                        <div class="flex flex-col">
-                                            <span class="text-xs font-black text-gray-800" x-text="match.hospital.name"></span>
-                                            <span class="text-[9px] font-bold text-gray-400 uppercase" x-text="match.district"></span>
-                                        </div>
-                                    </td>
-                                    <td class="py-4 text-center">
-                                        <span class="text-sm font-black text-emerald-600" x-text="match.available_units"></span>
-                                    </td>
-                                    <td class="py-4 text-right">
-                                        <form :action="'/govt-admin/blood-bank/request/' + selectedRequest.id + '/match'" method="POST" class="inline">
-                                            @csrf
-                                            <input type="hidden" name="matched_hospital_id" :value="match.hospital_id">
-                                            <input type="number" name="approved_units" :max="Math.min(selectedRequest.requested_units, match.available_units)" value="1" min="1" class="w-16 rounded-lg border-gray-100 bg-gray-50 text-[10px] font-black py-1 px-2 focus:ring-indigo-500 mr-2">
-                                            <button type="submit" class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all">Match</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            </template>
-                            <template x-if="matchingHospitals.length === 0">
-                                <tr>
-                                    <td colspan="3" class="py-8 text-center text-gray-400 text-[10px] font-black uppercase tracking-widest">No matching stock found</td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button @click="showMatchModal = false" class="px-6 py-3 bg-gray-50 text-gray-400 rounded-xl text-[10px] font-black hover:bg-gray-100 transition-all uppercase tracking-widest">Cancel</button>
-                    <form :action="'/govt-admin/blood-bank/request/' + selectedRequest.id + '/status'" method="POST" class="inline" x-show="selectedRequest">
-                        @csrf
-                        <input type="hidden" name="status" value="Rejected">
-                        <button type="submit" class="px-6 py-3 bg-red-50 text-red-600 rounded-xl text-[10px] font-black hover:bg-red-600 hover:text-white transition-all uppercase tracking-widest">Reject Request</button>
-                    </form>
-                </div>
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="showTransferModal = false" class="px-6 py-3 bg-gray-50 text-gray-400 rounded-xl text-[10px] font-black hover:bg-gray-100 transition-all uppercase tracking-widest">Cancel</button>
+                        <button type="submit" class="px-6 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black hover:bg-emerald-700 transition-all uppercase tracking-widest shadow-lg shadow-emerald-100">Execute Transfer</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -327,13 +313,4 @@
     </div>
 </div>
 
-<script>
-    function fetchMatches(requestId, bloodGroup, district, requestingHospitalId) {
-        fetch(`/api/blood-bank/matches?blood_group=${encodeURIComponent(bloodGroup)}&district=${encodeURIComponent(district)}&exclude_hospital_id=${requestingHospitalId}`)
-            .then(res => res.json())
-            .then(data => {
-                this.matchingHospitals = data;
-            });
-    }
-</script>
 @endsection

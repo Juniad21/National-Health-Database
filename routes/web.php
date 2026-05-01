@@ -186,22 +186,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/request/{id}/status', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'updateRequestStatus'])->name('request.status');
             Route::post('/request/{id}/match', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'matchHospital'])->name('request.match');
             Route::post('/request/{id}/note', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'updateAdminNote'])->name('request.note');
+            Route::post('/transfer', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'transferStock'])->name('transfer');
         });
     });
 
     // Public Doctor Profiles
     Route::get('/doctor-profile/{id}', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'publicShow'])->name('doctor.public_profile');
 
-    // Internal Matching API
-    Route::get('/api/blood-bank/matches', function(Illuminate\Http\Request $request) {
-        return \App\Models\BloodStock::with('hospital')
-            ->where('blood_group', $request->blood_group)
-            ->where('available_units', '>', 0)
-            ->where('hospital_id', '!=', $request->exclude_hospital_id)
-            ->orderByRaw("district = ? DESC", [$request->district])
-            ->orderBy('available_units', 'desc')
-            ->get();
-    })->middleware('role:govt_admin');
 });
 
 // 4. Standard Profile Routes
