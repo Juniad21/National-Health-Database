@@ -33,8 +33,9 @@ class PatientDashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
             
+        // Patient is ONLY 'up to date' if they have ZERO 'pending', 'due', or 'overdue' doses
         $upcomingVaccine = \App\Models\Vaccination::where('patient_id', $patient->id)
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'due', 'overdue'])
             ->orderBy('due_date', 'asc')
             ->first();
             
@@ -51,6 +52,18 @@ class PatientDashboardController extends Controller
             'vaccinations' => $vaccinations,
             'upcomingVaccine' => $upcomingVaccine,
             'urgentBloodRequests' => $urgentBloodRequests
+        ]);
+    }
+
+    public function vaccinations()
+    {
+        $patient = Auth::user()->patient;
+        $vaccinations = \App\Models\Vaccination::where('patient_id', $patient->id)
+            ->orderBy('due_date', 'asc')
+            ->get();
+
+        return view('patient.vaccinations', [
+            'vaccinations' => $vaccinations
         ]);
     }
 

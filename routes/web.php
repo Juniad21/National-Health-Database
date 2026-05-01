@@ -65,6 +65,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/health-analytics', [\App\Http\Controllers\Patient\PatientProfileController::class, 'healthAnalytics'])->name('health_analytics');
         Route::post('/health-metrics', [\App\Http\Controllers\Patient\PatientProfileController::class, 'storeMetric'])->name('health_metrics.store');
         Route::delete('/health-metrics/{id}', [\App\Http\Controllers\Patient\PatientProfileController::class, 'destroyMetric'])->name('health_metrics.destroy');
+
+        // Vaccination Tracking
+        Route::get('/dashboard/vaccinations', [PatientDashboardController::class, 'vaccinations'])->name('vaccinations');
     });
 
     // ==========================================
@@ -77,6 +80,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/patient/{patient_id}/medical-record', [DoctorDashboardController::class, 'storeMedicalRecord'])->name('medical_record.store');
         Route::get('/consultation/{patient_id}', [DoctorDashboardController::class, 'consultation'])->name('consultation');
         Route::post('/consultation/{patient_id}', [DoctorDashboardController::class, 'storeConsultation'])->name('consultation.store');
+        
+        // Vaccination Prescription
+        Route::post('/patient/{patient}/vaccine', [DoctorDashboardController::class, 'prescribeVaccine'])->name('prescribe_vaccine');
         // ... (remaining doctor routes)
         Route::post('/queue/{appointment_id}/visit', [DoctorDashboardController::class, 'markVisited'])->name('queue.visit');
         Route::post('/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('appointment.approve');

@@ -58,6 +58,9 @@
                     <button @click="activeTab = 'guidelines'" :class="activeTab === 'guidelines' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all ml-1">
                         General Guidelines
                     </button>
+                    <button @click="activeTab = 'vaccination'" :class="activeTab === 'vaccination' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all ml-1">
+                        Prescribe Vaccine
+                    </button>
                 </div>
             </div>
 
@@ -167,6 +170,32 @@
                         <div class="flex justify-end">
                             <button type="submit" class="bg-teal-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-teal-700 transition-colors">
                                 Add Guidelines
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- VACCINATION TAB -->
+                <div x-show="activeTab === 'vaccination'" x-cloak>
+                    <form action="{{ route('doctor.prescribe_vaccine', $patient->id) }}" method="POST" class="space-y-6">
+                        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Vaccine Name</label>
+                                <input type="text" name="vaccine_name" required placeholder="e.g. Covid-19 (Pfizer)" class="w-full rounded-xl border-gray-200 bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Dose Number</label>
+                                <input type="number" name="dose_number" required value="1" min="1" class="w-full rounded-xl border-gray-200 bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Scheduled Date</label>
+                                <input type="date" name="scheduled_date" required min="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-200 bg-gray-50">
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform hover:-translate-y-0.5">
+                                ✓ Prescribe Vaccination
                             </button>
                         </div>
                     </form>

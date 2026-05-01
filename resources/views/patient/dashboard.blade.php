@@ -128,7 +128,7 @@
                 @endif
 
                 <div class="pt-2">
-                    <a href="#" class="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-teal-600 text-teal-600 font-black text-sm rounded-2xl hover:bg-teal-50 transition-all">
+                    <a href="{{ route('patient.vaccinations') }}" class="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-teal-600 text-teal-600 font-black text-sm rounded-2xl hover:bg-teal-50 transition-all">
                         View Vaccination Details
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                     </a>

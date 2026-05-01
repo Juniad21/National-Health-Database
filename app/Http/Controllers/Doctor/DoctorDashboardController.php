@@ -281,4 +281,24 @@ class DoctorDashboardController extends Controller
 
         return redirect()->back()->with('success', 'Triage notes added successfully.');
     }
+
+    public function prescribeVaccine(Request $request, $patientId)
+    {
+        $validated = $request->validate([
+            'vaccine_name'   => 'required|string',
+            'dose_number'    => 'required|integer',
+            'scheduled_date' => 'required|date',
+        ]);
+
+        $patient = \App\Models\Patient::findOrFail($patientId);
+
+        \App\Models\Vaccination::create([
+            'patient_id'   => $patient->id,
+            'vaccine_name' => $validated['vaccine_name'] . " (Dose " . $validated['dose_number'] . ")",
+            'due_date'     => $validated['scheduled_date'],
+            'status'       => 'pending',
+        ]);
+
+        return redirect()->back()->with('success', 'Vaccination prescribed successfully!');
+    }
 }

@@ -430,20 +430,34 @@ class DatabaseSeeder extends Seeder
                 'date' => Carbon::now()->subDays(random_int(60, 100))
             ]);
 
-            // Ensure every patient has vaccination tracker data
-            Vaccination::create([
+            // Ensure every patient has health metric data
+            \App\Models\PatientHealthMetric::create([
                 'patient_id' => $patient->id,
-                'vaccine_name' => 'Polio Vaccine (IPV)',
-                'due_date' => Carbon::now()->subYears(5),
-                'status' => 'taken'
+                'user_id' => $patient->user_id,
+                'weight_kg' => 70.5 + ($index % 5),
+                'systolic_bp' => 120 + ($index % 10),
+                'diastolic_bp' => 80 + ($index % 5),
+                'heart_rate' => 72 + ($index % 8),
+                'bmi' => 22.5 + ($index % 3),
+                'recorded_at' => Carbon::now()->subDays(random_int(1, 10))
             ]);
 
-            Vaccination::create([
-                'patient_id' => $patient->id,
-                'vaccine_name' => 'Tetanus Booster',
-                'due_date' => Carbon::now()->addDays(rand(15, 60)),
-                'status' => 'pending'
-            ]);
+            // Baseline Vaccination Schedule for every patient
+            $baselineVaccines = [
+                ['name' => 'Covid-19 Pfizer (Dose 1)', 'status' => 'taken', 'date' => Carbon::now()->subYears(2)],
+                ['name' => 'Covid-19 Pfizer (Dose 2)', 'status' => 'taken', 'date' => Carbon::now()->subYears(1)],
+                ['name' => 'Influenza 2026', 'status' => 'pending', 'date' => Carbon::now()->addMonths(2)],
+                ['name' => 'Hepatitis B (Dose 1)', 'status' => 'pending', 'date' => Carbon::now()->addDays(15)]
+            ];
+
+            foreach ($baselineVaccines as $bv) {
+                Vaccination::create([
+                    'patient_id' => $patient->id,
+                    'vaccine_name' => $bv['name'],
+                    'due_date' => $bv['date'],
+                    'status' => $bv['status']
+                ]);
+            }
         }
 
         // --- Add some generic upcoming appointments for UI testing ---
