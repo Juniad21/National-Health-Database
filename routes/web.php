@@ -146,6 +146,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/mission/{id}/status', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'updateAssignmentStatus'])->name('assignment.status');
             Route::post('/{id}/reset', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'resetStatus'])->name('reset');
         });
+
+        // Blood Bank
+        Route::prefix('blood-bank')->name('blood_bank.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Hospital\BloodBankController::class, 'index'])->name('index');
+            Route::post('/stock', [\App\Http\Controllers\Hospital\BloodBankController::class, 'updateStock'])->name('stock.update');
+            Route::post('/request', [\App\Http\Controllers\Hospital\BloodBankController::class, 'storeRequest'])->name('request.store');
+            Route::post('/request/{id}/cancel', [\App\Http\Controllers\Hospital\BloodBankController::class, 'cancelRequest'])->name('request.cancel');
+        });
     });
 
     // ==========================================
@@ -171,10 +179,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Ambulance Monitoring
         Route::get('/ambulances', [\App\Http\Controllers\Govt\GovtAdminDashboardController::class, 'ambulances'])->name('ambulances.index');
+
+        // National Blood Bank
+        Route::prefix('blood-bank')->name('blood_bank.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'index'])->name('index');
+            Route::post('/request/{id}/status', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'updateRequestStatus'])->name('request.status');
+            Route::post('/request/{id}/match', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'matchHospital'])->name('request.match');
+            Route::post('/request/{id}/note', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'updateAdminNote'])->name('request.note');
+        });
     });
 
     // Public Doctor Profiles
     Route::get('/doctor-profile/{id}', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'publicShow'])->name('doctor.public_profile');
+
+    // Internal Matching API
+    Route::get('/api/blood-bank/matches', function(Illuminate\Http\Request $request) {
+        return \App\Models\BloodStock::with('hospital')
+            ->where('blood_group', $request->blood_group)
+            ->where('available_units', '>', 0)
+            ->where('hospital_id', '!=', $request->exclude_hospital_id)
+            ->orderByRaw("district = ? DESC", [$request->district])
+            ->orderBy('available_units', 'desc')
+            ->get();
+    })->middleware('role:govt_admin');
 });
 
 // 4. Standard Profile Routes

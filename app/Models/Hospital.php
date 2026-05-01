@@ -51,4 +51,14 @@ class Hospital extends Model
     {
         return $this->hasMany(HospitalResource::class);
     }
+
+    public function bloodStocks()
+    {
+        return $this->hasMany(BloodStock::class);
+    }
+
+    public function bloodRequests()
+    {
+        return $this->hasMany(BloodRequest::class, 'requesting_hospital_id');
+    }
 }
