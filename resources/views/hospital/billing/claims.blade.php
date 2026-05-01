@@ -73,9 +73,9 @@
                             <div class="font-bold text-gray-800">{{ $claim->insurance_provider }}</div>
                             <div class="text-xs text-gray-500">Policy: {{ $claim->policy_number }}</div>
                         </td>
-                        <td class="p-4 font-bold text-gray-800 text-right">${{ number_format($claim->claim_amount, 2) }}</td>
+                        <td class="p-4 font-bold text-gray-800 text-right">৳{{ number_format($claim->claim_amount, 2) }}</td>
                         <td class="p-4 font-bold text-emerald-600 text-right">
-                            {{ $claim->approved_amount ? '$' . number_format($claim->approved_amount, 2) : '-' }}
+                            {{ $claim->approved_amount ? '৳' . number_format($claim->approved_amount, 2) : '-' }}
                         </td>
                         <td class="p-4 text-center">
                             @if($claim->claim_status == 'approved')

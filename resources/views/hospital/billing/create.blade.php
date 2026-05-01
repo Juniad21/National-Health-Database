@@ -38,27 +38,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Fees Inputs -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Consultation Fee ($)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Consultation Fee (৳)</label>
                     <input type="number" step="0.01" min="0" x-model="fees.consultation" name="consultation_fee" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Lab Fee ($)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lab Fee (৳)</label>
                     <input type="number" step="0.01" min="0" x-model="fees.lab" name="lab_fee" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Medicine Fee ($)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Medicine Fee (৳)</label>
                     <input type="number" step="0.01" min="0" x-model="fees.medicine" name="medicine_fee" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Room Fee ($)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Room Fee (৳)</label>
                     <input type="number" step="0.01" min="0" x-model="fees.room" name="room_fee" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Emergency Fee ($)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Emergency Fee (৳)</label>
                     <input type="number" step="0.01" min="0" x-model="fees.emergency" name="emergency_fee" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Other Charges ($)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Other Charges (৳)</label>
                     <input type="number" step="0.01" min="0" x-model="fees.other" name="other_charges" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right" required>
                 </div>
             </div>
@@ -69,15 +69,15 @@
                 <div class="w-full md:w-1/2">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm font-bold text-gray-700">Subtotal:</span>
-                        <span class="text-lg font-medium text-gray-800" x-text="'$' + subtotal()"></span>
+                        <span class="text-lg font-medium text-gray-800" x-text="'৳' + subtotal()"></span>
                     </div>
                     <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
-                        <span class="text-sm font-bold text-gray-700">Discount ($):</span>
+                        <span class="text-sm font-bold text-gray-700">Discount (৳):</span>
                         <input type="number" step="0.01" min="0" x-model="discount" name="discount" class="w-32 text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-right" required>
                     </div>
                     <div class="flex justify-between items-center bg-indigo-50 p-4 rounded-lg border border-indigo-100">
                         <span class="text-lg font-black text-indigo-900">Total Amount:</span>
-                        <span class="text-2xl font-black text-indigo-700" x-text="'$' + total()"></span>
+                        <span class="text-2xl font-black text-indigo-700" x-text="'৳' + total()"></span>
                     </div>
                 </div>
             </div>

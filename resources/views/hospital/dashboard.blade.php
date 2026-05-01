@@ -55,7 +55,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Total Revenue</p>
-                    <p class="text-2xl font-black text-gray-800">${{ number_format($stats['revenue'], 2) }}</p>
+                    <p class="text-2xl font-black text-gray-800">৳{{ number_format($stats['revenue'], 2) }}</p>
                 </div>
             </div>
 

@@ -72,8 +72,8 @@
                             <div class="text-xs text-gray-500">NID: {{ $bill->patient?->nid ?? 'N/A' }}</div>
                         </td>
                         <td class="p-4 text-gray-600">{{ \Carbon\Carbon::parse($bill->issued_date)->format('M d, Y') }}</td>
-                        <td class="p-4 font-bold text-gray-800 text-right">${{ number_format($bill->total_amount, 2) }}</td>
-                        <td class="p-4 font-bold text-red-600 text-right">${{ number_format($bill->due_amount, 2) }}</td>
+                        <td class="p-4 font-bold text-gray-800 text-right">৳{{ number_format($bill->total_amount, 2) }}</td>
+                        <td class="p-4 font-bold text-red-600 text-right">৳{{ number_format($bill->due_amount, 2) }}</td>
                         <td class="p-4 text-center">
                             @if($bill->payment_status == 'paid')
                                 <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded border border-emerald-200">Paid</span>
