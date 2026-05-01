@@ -43,4 +43,9 @@ class Doctor extends Model
     {
         return $this->hasOne(DoctorProfile::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(DoctorReview::class);
+    }
 }

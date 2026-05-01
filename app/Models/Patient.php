@@ -77,4 +77,9 @@ class Patient extends Model
         if ($bmi < 30) return 'Overweight';
         return 'Obese';
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(DoctorReview::class);
+    }
 }

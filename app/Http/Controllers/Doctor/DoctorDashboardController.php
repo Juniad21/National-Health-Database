@@ -301,4 +301,20 @@ class DoctorDashboardController extends Controller
 
         return redirect()->back()->with('success', 'Vaccination prescribed successfully!');
     }
+
+    public function reviews()
+    {
+        $doctor = Auth::user()->doctor;
+        $reviews = \App\Models\DoctorReview::where('doctor_id', $doctor->id)
+            ->with('patient')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        $averageRating = $reviews->avg('rating');
+        
+        return view('doctor.reviews', [
+            'reviews' => $reviews,
+            'averageRating' => $averageRating
+        ]);
+    }
 }

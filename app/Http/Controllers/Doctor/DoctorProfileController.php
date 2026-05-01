@@ -100,14 +100,14 @@ class DoctorProfileController extends Controller
 
     public function publicShow($id)
     {
-        $doctor = \App\Models\Doctor::findOrFail($id);
+        $doctor = \App\Models\Doctor::with(['hospital', 'user'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->findOrFail($id);
+            
         $profile = $doctor->profile;
+        $reviews = $doctor->reviews()->with('patient')->latest()->get();
 
-        if (!$profile || $profile->verification_status !== 'Verified') {
-            // Optional: Still show but with a warning or restricted info
-            // For now, let's allow viewing if profile exists
-        }
-
-        return view('doctor.profile.public', compact('doctor', 'profile'));
+        return view('doctor.profile.public', compact('doctor', 'profile', 'reviews'));
     }
 }

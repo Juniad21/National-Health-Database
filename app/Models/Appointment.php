@@ -35,4 +35,9 @@ class Appointment extends Model
     {
         return $this->belongsTo(Hospital::class);
     }
+
+    public function review()
+    {
+        return $this->hasOne(DoctorReview::class);
+    }
 }

@@ -46,6 +46,8 @@
                 'specialty'   => $d->specialty ?? 'General',
                 'hospital'    => $d->hospital->name ?? 'Unknown',
                 'hospital_id' => $d->hospital->id ?? null,
+                'rating'      => number_format($d->reviews_avg_rating ?? 0, 1),
+                'reviews_count' => $d->reviews_count ?? 0,
             ])) }},
             get filteredDoctors() {
                 return this.doctors.filter(d => {
@@ -99,7 +101,7 @@
                     class="w-full rounded-xl border-gray-300 focus:border-teal-500 focus:ring-teal-500 shadow-sm">
                     <option value="" disabled selected>Choose a Doctor...</option>
                     <template x-for="doc in filteredDoctors" :key="doc.id">
-                        <option :value="doc.id" x-text="doc.name + ' (' + doc.specialty + ') — ' + doc.hospital"></option>
+                        <option :value="doc.id" x-text="doc.name + ' (' + doc.specialty + ') — ⭐ ' + doc.rating + ' (' + doc.reviews_count + ' reviews)'"></option>
                     </template>
                     <option value="" disabled x-show="filteredDoctors.length === 0">No doctors match your filters</option>
                 </select>
@@ -211,6 +213,7 @@
                                 <th class="pb-3 text-sm font-semibold text-gray-500">Doctor</th>
                                 <th class="pb-3 text-sm font-semibold text-gray-500">Hospital</th>
                                 <th class="pb-3 text-sm font-semibold text-gray-500">Status</th>
+                                <th class="pb-3 text-sm font-semibold text-gray-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -242,8 +245,20 @@
                                             <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full">Pending</span>
                                         @elseif(strtolower($app->status) === 'approved' || strtolower($app->status) === 'confirmed')
                                             <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Approved</span>
+                                        @elseif(strtolower($app->status) === 'completed')
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">Completed</span>
                                         @else
                                             <span class="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-bold rounded-full">{{ ucfirst($app->status) }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        @if(strtolower($app->status) === 'completed' && !$app->review)
+                                            <button @click="$dispatch('open-review-modal', { id: {{ $app->id }}, doctor: 'Dr. {{ $app->doctor->first_name }} {{ $app->doctor->last_name }}' })" 
+                                                class="text-xs font-bold text-teal-600 hover:text-teal-800 bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 transition-all">
+                                                Leave Feedback
+                                            </button>
+                                        @elseif($app->review)
+                                            <span class="text-xs font-bold text-gray-400">Feedback Left ⭐ {{ $app->review->rating }}</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -260,4 +275,67 @@
     </div>
 
 </div>
+
+<!-- Review Modal -->
+<div x-data="{ 
+    isOpen: false, 
+    appointmentId: null, 
+    doctorName: '', 
+    rating: 5, 
+    comment: '' 
+}" 
+x-show="isOpen" 
+x-on:open-review-modal.window="isOpen = true; appointmentId = $event.detail.id; doctorName = $event.detail.doctor"
+class="fixed inset-0 z-50 overflow-y-auto" 
+x-cloak>
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" @click="isOpen = false"></div>
+
+        <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-8 pt-8 pb-6">
+                <h3 class="text-2xl font-black text-gray-800 mb-2">Leave Feedback</h3>
+                <p class="text-gray-500 text-sm mb-6">How was your appointment with <span class="font-bold text-teal-600" x-text="doctorName"></span>?</p>
+
+                <form :action="'/patient/appointment/' + appointmentId + '/review'" method="POST" class="space-y-6">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-3">Your Rating</label>
+                        <div class="flex gap-2">
+                            <template x-for="i in 5">
+                                <button type="button" @click="rating = i" class="transition-transform transform hover:scale-110">
+                                    <svg class="w-10 h-10" :class="i <= rating ? 'text-yellow-400 fill-current' : 'text-gray-200'" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
+                        <input type="hidden" name="rating" :value="rating">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Your Experience</label>
+                        <textarea name="comment" rows="4" placeholder="Share details about your consultation..." 
+                            class="w-full rounded-2xl border-gray-200 bg-gray-50 text-sm focus:ring-teal-500 focus:border-teal-500"></textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="isOpen = false" class="flex-1 px-6 py-3 border-2 border-gray-100 text-gray-400 font-bold rounded-2xl hover:bg-gray-50 transition-all">Cancel</button>
+                        <button type="submit" class="flex-1 px-6 py-3 bg-teal-600 text-white font-black rounded-2xl hover:bg-teal-700 shadow-lg shadow-teal-100 transition-all">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    [x-cloak] { display: none !important; }
+    @keyframes bounce-once {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    .animate-bounce-once {
+        animation: bounce-once 2s ease-in-out 3;
+    }
+</style>
 @endsection

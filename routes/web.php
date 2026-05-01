@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/emergency/trigger', [PatientDashboardController::class, 'triggerEmergency'])->name('emergency.trigger');
         Route::get('/emergency/{id}', [PatientDashboardController::class, 'viewEmergency'])->name('emergency.view');
         Route::post('/evaluation', [PatientDashboardController::class, 'storeEvaluation'])->name('evaluation.store');
+        Route::post('/appointment/{appointment}/review', [PatientDashboardController::class, 'submitReview'])->name('submit_review');
 
         // Profile Management
         Route::get('/profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'edit'])->name('profile.edit');
@@ -83,6 +84,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // Vaccination Prescription
         Route::post('/patient/{patient}/vaccine', [DoctorDashboardController::class, 'prescribeVaccine'])->name('prescribe_vaccine');
+        Route::get('/reviews', [DoctorDashboardController::class, 'reviews'])->name('reviews');
         // ... (remaining doctor routes)
         Route::post('/queue/{appointment_id}/visit', [DoctorDashboardController::class, 'markVisited'])->name('queue.visit');
         Route::post('/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('appointment.approve');

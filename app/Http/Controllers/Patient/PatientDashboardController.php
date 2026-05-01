@@ -76,8 +76,10 @@ class PatientDashboardController extends Controller
             ->orderBy('date', 'desc')
             ->get();
         
-        // Get all available doctors for scheduling, with hospital and user details
+        // Get all available doctors for scheduling, with hospital and user details, including average rating
         $doctors = \App\Models\Doctor::with(['hospital', 'user'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->orderBy('id', 'asc')
             ->get();
         
@@ -395,5 +397,34 @@ class PatientDashboardController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Thank you for your feedback!');
+    }
+
+    public function submitReview(Request $request, $appointmentId)
+    {
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:500',
+        ]);
+
+        $appointment = \App\Models\Appointment::findOrFail($appointmentId);
+        $patient = \Illuminate\Support\Facades\Auth::user()->patient;
+
+        if ($appointment->patient_id !== $patient->id) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
+        if (strtolower($appointment->status) !== 'completed') {
+            return redirect()->back()->with('error', 'You can only review completed appointments.');
+        }
+
+        \App\Models\DoctorReview::create([
+            'patient_id' => $patient->id,
+            'doctor_id' => $appointment->doctor_id,
+            'appointment_id' => $appointment->id,
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'],
+        ]);
+
+        return redirect()->back()->with('success', 'Thank you for your review!');
     }
 }
