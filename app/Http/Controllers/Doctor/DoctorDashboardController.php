@@ -305,10 +305,20 @@ class DoctorDashboardController extends Controller
     public function reviews()
     {
         $doctor = Auth::user()->doctor;
-        $reviews = \App\Models\DoctorReview::where('doctor_id', $doctor->id)
+        $evaluations = \App\Models\DoctorEvaluation::where('doctor_id', $doctor->id)
             ->with('patient')
             ->orderBy('created_at', 'desc')
             ->get();
+        
+        // Map evaluation fields to match the view's expectation of $review->rating and $review->comment
+        $reviews = $evaluations->map(function($eval) {
+            return (object) [
+                'patient' => $eval->patient,
+                'rating' => $eval->rating_1_to_5,
+                'comment' => $eval->feedback_text,
+                'created_at' => $eval->created_at,
+            ];
+        });
         
         $averageRating = $reviews->avg('rating');
         
