@@ -363,7 +363,7 @@ class PatientDashboardController extends Controller
 
     public function viewEmergency($id)
     {
-        $emergency = \App\Models\Emergency::with(['hospital', 'doctor', 'ambulanceStaff'])->findOrFail($id);
+        $emergency = \App\Models\Emergency::with(['hospital', 'doctor', 'ambulance'])->findOrFail($id);
         $patient = Auth::user()->patient;
 
         if ($emergency->patient_id !== $patient->id) {

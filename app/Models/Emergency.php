@@ -13,7 +13,6 @@ class Emergency extends Model
         'patient_id',
         'hospital_id',
         'assigned_doctor_id',
-        'assigned_ambulance_id',
         'emergency_type',
         'severity',
         'symptoms',
@@ -53,11 +52,6 @@ class Emergency extends Model
         return $this->belongsTo(Doctor::class, 'assigned_doctor_id');
     }
 
-    public function ambulanceStaff()
-    {
-        return $this->belongsTo(User::class, 'assigned_ambulance_id');
-    }
-
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -71,5 +65,15 @@ class Emergency extends Model
     public function resolver()
     {
         return $this->belongsTo(User::class, 'resolved_by');
+    }
+
+    public function ambulance()
+    {
+        return $this->belongsTo(Ambulance::class);
+    }
+
+    public function ambulanceAssignments()
+    {
+        return $this->hasMany(AmbulanceAssignment::class, 'emergency_alert_id');
     }
 }

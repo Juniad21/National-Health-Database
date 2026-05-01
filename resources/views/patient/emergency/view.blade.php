@@ -50,7 +50,7 @@
                         </div>
                         @endif
 
-                        @if($emergency->status === 'Ambulance Assigned' || $emergency->assigned_ambulance_id)
+                        @if($emergency->status === 'Ambulance Assigned' || $emergency->ambulance_id)
                         <div class="relative">
                             <div class="absolute -left-[27px] top-1 w-4 h-4 rounded-full bg-purple-500 border-4 border-white shadow-sm"></div>
                             <p class="text-sm font-bold text-gray-800">Ambulance Assigned</p>
@@ -139,14 +139,14 @@
                         </div>
                         @endif
 
-                        @if($emergency->assigned_ambulance_id)
+                        @if($emergency->ambulance_id)
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400 font-bold uppercase">Ambulance Team</p>
-                                <p class="text-sm font-bold text-gray-800">Unit dispatched</p>
+                                <p class="text-sm font-bold text-gray-800">Unit {{ $emergency->ambulance->ambulance_code }}</p>
                             </div>
                         </div>
                         @endif

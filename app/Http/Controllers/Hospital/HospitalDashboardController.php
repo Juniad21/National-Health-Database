@@ -116,7 +116,7 @@ class HospitalDashboardController extends Controller
 
     public function viewEmergency($id)
     {
-        $emergency = \App\Models\Emergency::with(['patient', 'doctor', 'ambulanceStaff'])->findOrFail($id);
+        $emergency = \App\Models\Emergency::with(['patient', 'doctor', 'ambulance'])->findOrFail($id);
         $hospital = Auth::user()->hospital;
 
         // If assigned to another hospital, unauthorized
@@ -125,7 +125,10 @@ class HospitalDashboardController extends Controller
         }
 
         $doctors = \App\Models\Doctor::where('hospital_id', $hospital->id)->get();
-        $ambulances = \App\Models\User::where('role', 'ambulance')->get(); 
+        // Get real available ambulances from this hospital
+        $ambulances = \App\Models\Ambulance::where('hospital_id', $hospital->id)
+            ->where('current_status', 'Available')
+            ->get(); 
 
         return view('hospital.emergencies.view', compact('emergency', 'doctors', 'ambulances'));
     }
@@ -173,23 +176,53 @@ class HospitalDashboardController extends Controller
     public function dispatchAmbulance(Request $request, $id)
     {
         $validated = $request->validate([
-            'ambulance_id' => 'nullable|exists:users,id',
+            'ambulance_id' => 'required|exists:ambulances,id',
         ]);
 
         $emergency = \App\Models\Emergency::findOrFail($id);
+        $ambulance = \App\Models\Ambulance::findOrFail($validated['ambulance_id']);
+        $hospital = Auth::user()->hospital;
 
-        // Auto-assign first available ambulance if none was selected (e.g. from the banner)
-        $ambulanceId = $validated['ambulance_id'] ?? null;
-        if (!$ambulanceId) {
-            $ambulanceUser = \App\Models\User::where('role', 'ambulance')->first();
-            $ambulanceId = $ambulanceUser?->id;
+        if ($ambulance->hospital_id !== $hospital->id) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
+        if ($ambulance->current_status !== 'Available') {
+            return redirect()->back()->with('error', 'Ambulance is not available.');
+        }
+
+        // Create assignment
+        \App\Models\AmbulanceAssignment::create([
+            'ambulance_id' => $ambulance->id,
+            'emergency_alert_id' => $emergency->id,
+            'hospital_id' => $hospital->id,
+            'patient_id' => $emergency->patient_id,
+            'assigned_by' => Auth::id(),
+            'status' => 'Assigned',
+            'pickup_address' => $emergency->address,
+            'pickup_lat' => $emergency->latitude,
+            'pickup_lng' => $emergency->longitude,
+            'destination_hospital_id' => $hospital->id,
+        ]);
+
+        // Update ambulance status
+        $ambulance->update(['current_status' => 'Assigned']);
+
+        // Update emergency status
         $emergency->update([
-            'hospital_id' => Auth::user()->hospital_id,
-            'assigned_ambulance_id' => $ambulanceId,
+            'hospital_id' => $hospital->id,
+            'ambulance_id' => $ambulance->id,
             'status' => 'Ambulance Assigned',
         ]);
+
+        \App\Services\AuditLogService::logAction(
+            action: 'ambulance assigned to emergency',
+            description: "Assigned ambulance {$ambulance->ambulance_code} to emergency alert #{$emergency->id}",
+            module: 'emergency',
+            severity: 'high',
+            targetType: \App\Models\Emergency::class,
+            targetId: $emergency->id
+        );
 
         return redirect()->back()->with('success', 'Ambulance dispatched successfully.');
     }

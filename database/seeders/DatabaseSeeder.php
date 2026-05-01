@@ -536,12 +536,33 @@ class DatabaseSeeder extends Seeder
             'status' => 'pending'
         ]);
 
-        // --- Add Ambulance Staff ---
-        User::create([
-            'email' => 'ambulance@staff.bd',
-            'password' => Hash::make('12345678'),
-            'role' => 'ambulance',
-            'nid' => '1112223334',
+        // --- Create Ambulances for each hospital ---
+        foreach ($hospitals as $hospital) {
+            // Create 2 ambulances per hospital
+            for ($i = 1; $i <= 2; $i++) {
+                $ambulanceCode = "AMB-" . $hospital->id . "-" . str_pad($i, 2, '0', STR_PAD_LEFT);
+                
+                \App\Models\Ambulance::create([
+                    'hospital_id' => $hospital->id,
+                    'ambulance_code' => $ambulanceCode,
+                    'vehicle_number' => 'DHK-METRO-' . strtoupper(\Illuminate\Support\Str::random(6)),
+                    'ambulance_type' => ['Basic Life Support', 'Advanced Life Support', 'ICU Ambulance'][random_int(0, 2)],
+                    'capacity' => random_int(1, 2),
+                    'current_status' => 'Available',
+                    'is_active' => true,
+                ]);
+            }
+        }
+
+        // --- Specific Test Ambulance ---
+        \App\Models\Ambulance::create([
+            'hospital_id' => $hospitals[0]->id,
+            'ambulance_code' => 'TEST-AMB',
+            'vehicle_number' => 'DHK-007-AMB',
+            'ambulance_type' => 'Advanced Life Support',
+            'capacity' => 2,
+            'current_status' => 'Available',
+            'is_active' => true,
         ]);
     }
 }

@@ -125,21 +125,34 @@
                         <!-- Dispatch Ambulance -->
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Dispatch Ambulance</label>
-                            @if($emergency->assigned_ambulance_id)
-                                <div class="flex items-center justify-between p-3 bg-purple-50 rounded-xl text-purple-600">
-                                    <span class="text-sm font-bold">Ambulance Dispatched</span>
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            @if($emergency->ambulance_id)
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-4 bg-purple-50 border border-purple-100 rounded-xl text-purple-600">
+                                        <div class="flex flex-col">
+                                            <span class="text-[10px] font-black uppercase tracking-widest leading-none mb-1 text-purple-400">Unit {{ $emergency->ambulance->ambulance_code }}</span>
+                                            <span class="text-sm font-black tracking-tight">{{ $emergency->status }}</span>
+                                        </div>
+                                        <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    </div>
+                                    @php
+                                        $latestAssignment = $emergency->ambulanceAssignments()->latest()->first();
+                                    @endphp
+                                    @if($latestAssignment && $latestAssignment->notes)
+                                    <div class="p-3 bg-gray-50 rounded-xl text-[11px] text-gray-500 italic border border-gray-100">
+                                        Note from Crew: {{ $latestAssignment->notes }}
+                                    </div>
+                                    @endif
                                 </div>
                             @else
                                 <form action="{{ route('hospital.emergencies.dispatch', $emergency->id) }}" method="POST" class="space-y-2">
                                     @csrf
-                                    <select name="ambulance_id" required class="w-full rounded-xl border-gray-200 text-sm">
-                                        <option value="">Select Unit</option>
+                                    <select name="ambulance_id" required class="w-full rounded-xl border-gray-200 text-sm font-bold text-gray-700 bg-gray-50/50">
+                                        <option value="">Select Available Unit</option>
                                         @foreach($ambulances as $amb)
-                                            <option value="{{ $amb->id }}">Ambulance Unit #{{ $amb->id }} ({{ $amb->name }})</option>
+                                            <option value="{{ $amb->id }}">Ambulance {{ $amb->ambulance_code }} ({{ $amb->ambulance_type }})</option>
                                         @endforeach
                                     </select>
-                                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-xl text-sm">Dispatch Unit</button>
+                                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-3 rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-purple-100 transition-all">Dispatch Response Unit</button>
                                 </form>
                             @endif
                         </div>

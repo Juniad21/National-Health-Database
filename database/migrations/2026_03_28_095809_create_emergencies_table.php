@@ -15,7 +15,6 @@ return new class extends Migration {
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
             $table->foreignId('hospital_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('assigned_doctor_id')->nullable()->constrained('doctors')->nullOnDelete();
-            $table->foreignId('assigned_ambulance_id')->nullable()->constrained('users')->nullOnDelete();
             
             $table->string('emergency_type')->nullable();
             $table->enum('severity', ['low', 'medium', 'high', 'critical'])->default('medium');

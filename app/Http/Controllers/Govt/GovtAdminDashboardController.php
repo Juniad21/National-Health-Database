@@ -155,4 +155,31 @@ class GovtAdminDashboardController extends Controller
 
         return view('govt_admin.hospitals.index', compact('hospitals'));
     }
+
+    public function ambulances(Request $request)
+    {
+        $query = \App\Models\Ambulance::with(['hospital', 'currentAssignment.emergency']);
+
+        if ($request->filled('hospital')) {
+            $query->whereHas('hospital', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->hospital . '%');
+            });
+        }
+        if ($request->filled('type')) {
+            $query->where('ambulance_type', $request->type);
+        }
+        if ($request->filled('status')) {
+            $query->where('current_status', $request->status);
+        }
+
+        $ambulances = $query->paginate(15);
+        
+        $stats = [
+            'total' => \App\Models\Ambulance::count(),
+            'available' => \App\Models\Ambulance::where('current_status', 'Available')->count(),
+            'active_trips' => \App\Models\AmbulanceAssignment::whereNotIn('status', ['Completed', 'Cancelled'])->count(),
+        ];
+
+        return view('govt_admin.ambulances.index', compact('ambulances', 'stats'));
+    }
 }

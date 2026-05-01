@@ -136,6 +136,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/duplicates', [DuplicateRecordController::class, 'index'])->name('duplicates.index');
         Route::get('/duplicates/compare/{id1}/{id2}', [DuplicateRecordController::class, 'compare'])->name('duplicates.compare');
         Route::post('/duplicates/merge', [DuplicateRecordController::class, 'merge'])->name('duplicates.merge');
+
+        // Ambulance Fleet
+        Route::prefix('ambulance-fleet')->name('ambulance_fleet.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'store'])->name('store');
+            Route::put('/{id}', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'update'])->name('update');
+            Route::get('/history', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'history'])->name('history');
+            Route::post('/mission/{id}/status', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'updateAssignmentStatus'])->name('assignment.status');
+            Route::post('/{id}/reset', [\App\Http\Controllers\Hospital\AmbulanceFleetController::class, 'resetStatus'])->name('reset');
+        });
     });
 
     // ==========================================
@@ -158,14 +168,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Hospital Monitoring
         Route::get('/hospitals', [\App\Http\Controllers\Govt\GovtAdminDashboardController::class, 'hospitals'])->name('hospitals.index');
-    });
 
-    // ==========================================
-    // AMBULANCE ROUTES
-    // ==========================================
-    Route::prefix('ambulance')->name('ambulance.')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Ambulance\AmbulanceDashboardController::class, 'index'])->name('dashboard');
-        Route::post('/emergency/{id}/status', [\App\Http\Controllers\Ambulance\AmbulanceDashboardController::class, 'updateStatus'])->name('emergency.status');
+        // Ambulance Monitoring
+        Route::get('/ambulances', [\App\Http\Controllers\Govt\GovtAdminDashboardController::class, 'ambulances'])->name('ambulances.index');
     });
 
     // Public Doctor Profiles
