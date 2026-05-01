@@ -14,25 +14,6 @@
             ->first();
     @endphp
 
-    <!-- Emergency SOS Button -->
-    <div class="mb-8 flex justify-center">
-        <form action="{{ route('patient.emergency.trigger') }}" method="POST" class="w-full max-w-sm">
-            @csrf
-            <button type="submit"
-                onclick="return confirm('Are you sure you want to trigger an EMERGENCY ALERT? This will immediately notify nearby hospitals.')"
-                class="w-full relative group h-24 flex items-center justify-center rounded-3xl bg-gradient-to-r from-red-600 to-rose-700 text-white font-black text-2xl tracking-widest shadow-[0_0_40px_rgba(225,29,72,0.6)] hover:shadow-[0_0_60px_rgba(225,29,72,0.8)] transition-all duration-300">
-                <span
-                    class="absolute inset-0 rounded-3xl border-4 border-white/20 group-hover:border-white/40 transition-colors"></span>
-                <span
-                    class="absolute inset-0 rounded-3xl bg-red-500 opacity-0 group-hover:opacity-20 animate-ping transition-opacity"></span>
-                <svg class="w-10 h-10 mr-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
-                    </path>
-                </svg>
-                SOS EMERGENCY
-            </button>
-        </form>
-    </div>
 
     <!-- Urgent Blood Alerts -->
     @if(isset($urgentBloodRequests) && count($urgentBloodRequests) > 0)
@@ -74,28 +55,29 @@
                 Health Trends
             </h3>
 
-            @if($healthMetrics->count() > 0)
-                <div class="space-y-4">
-                    @foreach($healthMetrics as $metric)
-                        <div
-                            class="flex justify-between items-center p-4 bg-gray-50 rounded-2xl hover:bg-teal-50 transition-colors border border-gray-100">
-                            <div class="flex items-center gap-4">
-                                <div class="w-2 h-10 bg-teal-400 rounded-full"></div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800">
-                                        {{ \Carbon\Carbon::parse($metric->recorded_date)->format('M d, Y') }}
-                                    </p>
-                                    <p class="text-xs text-gray-500 font-medium">Recorded Date</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-lg font-bold text-teal-700">{{ $metric->bmi }} <span
-                                        class="text-xs text-teal-500 font-normal">BMI</span></p>
-                                <p class="text-sm font-bold text-gray-600">{{ $metric->blood_pressure }} <span
-                                        class="text-xs text-gray-400 font-normal">BP</span></p>
-                            </div>
+            @if($latestHealthMetric)
+                <div class="space-y-6">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                            <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">BMI</p>
+                            <p class="text-xl font-black text-gray-800">{{ $latestHealthMetric->bmi ?? '—' }}</p>
                         </div>
-                    @endforeach
+                        <div class="text-center p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                            <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">BP</p>
+                            <p class="text-xl font-black text-gray-800">{{ $latestHealthMetric->systolic_bp }}/{{ $latestHealthMetric->diastolic_bp }}</p>
+                        </div>
+                        <div class="text-center p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                            <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">Heart Rate</p>
+                            <p class="text-xl font-black text-gray-800">{{ $latestHealthMetric->heart_rate ?? '—' }}<span class="text-[10px] ml-0.5">bpm</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <a href="{{ route('patient.health_analytics') }}" class="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-teal-600 text-teal-600 font-black text-sm rounded-2xl hover:bg-teal-50 transition-all">
+                            View Full Health Analytics
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        </a>
+                    </div>
                 </div>
             @else
                 <div class="flex flex-col items-center justify-center py-10 text-gray-400">
@@ -104,6 +86,7 @@
                             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
                     <p>No health metrics recorded yet.</p>
+                    <a href="{{ route('patient.health_analytics') }}" class="mt-4 text-teal-600 font-bold hover:underline">Get Started →</a>
                 </div>
             @endif
         </div>
@@ -119,44 +102,37 @@
                 Vaccination Tracker
             </h3>
 
-            <div class="space-y-4">
-                @if(isset($vaccinations) && $vaccinations->count() > 0)
-                    @foreach($vaccinations as $vaccine)
-                        <div class="flex items-center justify-between p-4 rounded-2xl border {{ $vaccine->status === 'taken' ? 'bg-gray-50 border-gray-100' : 'bg-orange-50 border-orange-100' }}">
-                            <div>
-                                <p class="font-bold text-gray-800">{{ $vaccine->vaccine_name }}</p>
-                                @if($vaccine->status === 'taken')
-                                    <p class="text-sm text-green-600 font-medium flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Taken on {{ \Carbon\Carbon::parse($vaccine->updated_at)->format('M d, Y') }}
-                                    </p>
-                                @else
-                                    <p class="text-sm text-orange-600 font-medium flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        Due: {{ \Carbon\Carbon::parse($vaccine->due_date)->format('M d, Y') }}
-                                    </p>
-                                @endif
-                            </div>
-                            
-                            @if($vaccine->status === 'pending')
-                                <form action="{{ route('patient.vaccinations.mark_taken', $vaccine->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" onclick="return confirm('Are you sure you want to mark this vaccine as taken?')"
-                                        class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 transition-all shadow-sm shadow-orange-200">
-                                        Mark as Taken
-                                    </button>
-                                </form>
-                            @else
-                                <button disabled
-                                    class="px-4 py-2 bg-white border border-gray-200 text-teal-600 text-sm font-bold rounded-xl shadow-sm opacity-50">
-                                    Completed
-                                </button>
-                            @endif
+            <div class="space-y-6">
+                @if($upcomingVaccine)
+                    <div class="p-6 bg-orange-50 border border-orange-100 rounded-3xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
+                            <svg class="w-20 h-20 text-orange-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 2a1 1 0 00-.707 1.707L14.586 11l-8.293 8.293A1 1 0 107.707 20.707l9-9a1 1 0 000-1.414l-9-9A1 1 0 007 2z" clip-rule="evenodd"></path></svg>
                         </div>
-                    @endforeach
+                        <div class="relative z-10">
+                            <p class="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">Next Upcoming Vaccine</p>
+                            <h4 class="text-2xl font-black text-gray-800">{{ $upcomingVaccine->vaccine_name }}</h4>
+                            <p class="text-sm font-bold text-orange-700 mt-1 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                Due on {{ \Carbon\Carbon::parse($upcomingVaccine->due_date)->format('M d, Y') }}
+                            </p>
+                        </div>
+                    </div>
                 @else
-                    <div class="text-center py-6 text-gray-400 text-sm font-medium">No immunization records found.</div>
+                    <div class="p-6 bg-emerald-50 border border-emerald-100 rounded-3xl text-center">
+                        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <p class="text-sm font-bold text-emerald-800">All immunizations up to date.</p>
+                        <p class="text-xs text-emerald-600 mt-1">No pending vaccines scheduled.</p>
+                    </div>
                 @endif
+
+                <div class="pt-2">
+                    <a href="#" class="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-teal-600 text-teal-600 font-black text-sm rounded-2xl hover:bg-teal-50 transition-all">
+                        View Vaccination Details
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                    </a>
+                </div>
             </div>
         </div>
 

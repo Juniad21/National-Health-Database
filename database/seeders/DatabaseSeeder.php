@@ -429,6 +429,21 @@ class DatabaseSeeder extends Seeder
                 'document_path' => 'dummy/mri_scan_results.pdf',
                 'date' => Carbon::now()->subDays(random_int(60, 100))
             ]);
+
+            // Ensure every patient has vaccination tracker data
+            Vaccination::create([
+                'patient_id' => $patient->id,
+                'vaccine_name' => 'Polio Vaccine (IPV)',
+                'due_date' => Carbon::now()->subYears(5),
+                'status' => 'taken'
+            ]);
+
+            Vaccination::create([
+                'patient_id' => $patient->id,
+                'vaccine_name' => 'Tetanus Booster',
+                'due_date' => Carbon::now()->addDays(rand(15, 60)),
+                'status' => 'pending'
+            ]);
         }
 
         // --- Add some generic upcoming appointments for UI testing ---

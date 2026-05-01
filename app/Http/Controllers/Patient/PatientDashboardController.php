@@ -23,13 +23,20 @@ class PatientDashboardController extends Controller
     {
         $patient = Auth::user()->patient;
         
-        $healthMetrics = \App\Models\HealthMetric::where('patient_id', $patient->id)
-            ->orderBy('recorded_date', 'desc')
+        $healthMetrics = \App\Models\PatientHealthMetric::where('patient_id', $patient->id)
+            ->orderBy('recorded_at', 'desc')
             ->get();
+            
+        $latestHealthMetric = $healthMetrics->first();
             
         $vaccinations = \App\Models\Vaccination::where('patient_id', $patient->id)
             ->orderBy('created_at', 'desc')
             ->get();
+            
+        $upcomingVaccine = \App\Models\Vaccination::where('patient_id', $patient->id)
+            ->where('status', 'pending')
+            ->orderBy('due_date', 'asc')
+            ->first();
             
         $urgentBloodRequests = \App\Models\BloodRequest::where('blood_group_needed', $patient->blood_group)
             ->where('status', 'urgent')
@@ -40,7 +47,9 @@ class PatientDashboardController extends Controller
         
         return view('patient.dashboard', [
             'healthMetrics' => $healthMetrics,
+            'latestHealthMetric' => $latestHealthMetric,
             'vaccinations' => $vaccinations,
+            'upcomingVaccine' => $upcomingVaccine,
             'urgentBloodRequests' => $urgentBloodRequests
         ]);
     }
