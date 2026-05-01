@@ -13,7 +13,10 @@ class HospitalDashboardController extends Controller
     {
         $hospital = Auth::user()->hospital;
         
-        $emergencies = \App\Models\Emergency::where('hospital_id', $hospital->id)
+        $emergencies = \App\Models\Emergency::where(function($q) use ($hospital) {
+                $q->where('hospital_id', $hospital->id)
+                  ->orWhere('status', 'Sent');
+            })
             ->where('status', '!=', 'resolved')
             ->with('patient')
             ->orderBy('created_at', 'desc')
@@ -183,6 +186,7 @@ class HospitalDashboardController extends Controller
         }
 
         $emergency->update([
+            'hospital_id' => Auth::user()->hospital_id,
             'assigned_ambulance_id' => $ambulanceId,
             'status' => 'Ambulance Assigned',
         ]);
