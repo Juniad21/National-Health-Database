@@ -50,5 +50,22 @@ class DoctorFeedbackSeeder extends Seeder
                 ]
             );
         }
+
+        // Feedback 3: Karim for Dr. Shireen
+        $patient3 = Patient::find(4);
+        $doctor3 = Doctor::find(7);
+        $appointment3 = Appointment::where('patient_id', 4)->where('doctor_id', 7)->first();
+
+        if ($patient3 && $doctor3) {
+            DoctorEvaluation::updateOrCreate(
+                ['patient_id' => 4, 'doctor_id' => 7],
+                [
+                    'appointment_id' => $appointment3 ? $appointment3->id : 3,
+                    'rating_1_to_5' => 5,
+                    'feedback_text' => "Dr. Shireen is one of the best cardiologists I've seen. She was very thorough with my checkup and made me feel at ease throughout the process.",
+                    'consultation_time_minutes' => 20
+                ]
+            );
+        }
     }
 }
