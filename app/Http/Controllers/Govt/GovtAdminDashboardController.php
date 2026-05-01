@@ -17,25 +17,20 @@ class GovtAdminDashboardController extends Controller
         // Real data from the database
         $stats = [
             'registered_doctors' => Doctor::count(),
-            'pending_verifications' => 0, // No status field in schema
+            'pending_verifications' => \App\Models\DoctorProfile::where('verification_status', 'Pending')->count(),
             'registered_hospitals' => Hospital::count(),
-            'hospitals_under_review' => 0, // No status field in schema
+            'hospitals_under_review' => 0, 
             'active_patients' => Patient::count(),
             'claims_processed' => InsuranceClaim::count(),
-            'reported_incidents' => 0
+            'reported_incidents' => \App\Models\Emergency::count()
         ];
 
-        // Fetch some doctors for the verification queue (simulated as latest entries)
-        $pendingDoctors = Doctor::with('hospital')->latest()->take(3)->get()->map(function ($doctor) {
-            return [
-                'name' => "Dr. " . $doctor->first_name . " " . $doctor->last_name,
-                'license' => $doctor->bmdc_number,
-                'specialty' => $doctor->specialty,
-                'hospital' => $doctor->hospital->name ?? 'N/A',
-                'date' => $doctor->created_at->format('Y-m-d'),
-                'status' => 'Pending'
-            ];
-        });
+        // Fetch pending verifications
+        $pendingDoctors = \App\Models\DoctorProfile::where('verification_status', 'Pending')
+            ->with(['doctor', 'hospital'])
+            ->latest()
+            ->take(5)
+            ->get();
 
         // Fetch hospital resource data
         $hospitals = Hospital::with('doctors')->take(3)->get()->map(function ($hospital) {
@@ -91,5 +86,73 @@ class GovtAdminDashboardController extends Controller
         ];
 
         return view('govt_admin.emergencies.index', compact('emergencies', 'stats'));
+    }
+
+    public function doctors(Request $request)
+    {
+        $query = \App\Models\DoctorProfile::query();
+
+        if ($request->filled('specialization')) {
+            $query->where('specialization', 'like', '%' . $request->specialization . '%');
+        }
+        if ($request->filled('status')) {
+            $query->where('verification_status', $request->status);
+        }
+        if ($request->filled('hospital')) {
+            $query->whereHas('hospital', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->hospital . '%');
+            });
+        }
+
+        $doctors = $query->with(['doctor', 'hospital'])->paginate(15);
+        
+        return view('govt_admin.doctors.index', compact('doctors'));
+    }
+
+    public function showDoctor($id)
+    {
+        $profile = \App\Models\DoctorProfile::with(['user', 'doctor', 'hospital'])->findOrFail($id);
+        return view('govt_admin.doctors.show', compact('profile'));
+    }
+
+    public function verifyDoctor(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Pending,Verified,Rejected,Needs Review',
+            'admin_notes' => 'nullable|string',
+        ]);
+
+        $profile = \App\Models\DoctorProfile::findOrFail($id);
+        $profile->update([
+            'verification_status' => $validated['status'],
+            'admin_notes' => $validated['admin_notes'],
+        ]);
+
+        return redirect()->route('govt_admin.doctors.index')->with('success', "Doctor verification status updated to {$validated['status']}");
+    }
+
+    public function hospitals(Request $request)
+    {
+        $query = Hospital::with(['doctors', 'emergencies']);
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('address', 'like', '%' . $request->search . '%');
+        }
+
+        $hospitals = $query->paginate(10);
+
+        // Fetch resource summaries for each hospital
+        foreach ($hospitals as $hospital) {
+            $resources = $hospital->resources;
+            $hospital->resource_summary = [
+                'beds' => $resources->where('resource_type', 'General Bed')->first(),
+                'icu' => $resources->where('resource_type', 'ICU Unit')->first(),
+                'vent' => $resources->where('resource_type', 'Ventilator')->first(),
+                'oxygen' => $resources->where('resource_type', 'Oxygen Cylinder')->first(),
+            ];
+        }
+
+        return view('govt_admin.hospitals.index', compact('hospitals'));
     }
 }

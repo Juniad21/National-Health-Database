@@ -41,4 +41,14 @@ class Hospital extends Model
     {
         return $this->hasMany(InsuranceClaim::class);
     }
+
+    public function emergencies()
+    {
+        return $this->hasMany(Emergency::class);
+    }
+
+    public function resources()
+    {
+        return $this->hasMany(HospitalResource::class);
+    }
 }

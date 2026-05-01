@@ -38,4 +38,9 @@ class Doctor extends Model
     {
         return $this->hasMany(MedicalRecord::class);
     }
+
+    public function profile()
+    {
+        return $this->hasOne(DoctorProfile::class);
+    }
 }

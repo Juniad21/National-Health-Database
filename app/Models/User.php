@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->hasOne(Doctor::class);
     }
 
+    public function doctorProfile()
+    {
+        return $this->hasOne(DoctorProfile::class);
+    }
+
     public function hospital()
     {
         return $this->hasOne(Hospital::class);

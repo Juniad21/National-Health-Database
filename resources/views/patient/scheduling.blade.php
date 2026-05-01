@@ -227,7 +227,11 @@
                                                 {{ substr($app->doctor->first_name, 0, 1) }}
                                             </div>
                                             <div>
-                                                <p class="font-semibold text-gray-800">Dr. {{ $app->doctor->first_name }} {{ $app->doctor->last_name }}</p>
+                                                <p class="font-semibold text-gray-800">
+                                                    <a href="{{ route('doctor.public_profile', $app->doctor_id) }}" class="hover:text-teal-600 transition-colors">
+                                                        Dr. {{ $app->doctor->first_name }} {{ $app->doctor->last_name }}
+                                                    </a>
+                                                </p>
                                                 <p class="text-xs text-teal-600">{{ $app->doctor->specialty ?? 'General' }}</p>
                                             </div>
                                         </div>

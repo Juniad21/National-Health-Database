@@ -91,7 +91,7 @@
         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-gray-800">Doctor Verification Queue</h3>
-                <a href="#" class="text-indigo-600 text-sm font-semibold hover:underline">View All</a>
+                <a href="{{ route('govt_admin.doctors.index') }}" class="text-indigo-600 text-sm font-semibold hover:underline">View All</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -183,10 +183,13 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-800">Hospital Operational Status</h3>
-            <div class="flex gap-2">
-                <span class="flex items-center gap-1 text-xs text-gray-500"><span class="w-2 h-2 rounded-full bg-green-500"></span> Normal</span>
-                <span class="flex items-center gap-1 text-xs text-gray-500"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Warning</span>
-                <span class="flex items-center gap-1 text-xs text-gray-500"><span class="w-2 h-2 rounded-full bg-red-500"></span> Critical</span>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex gap-2">
+                    <span class="flex items-center gap-1 text-xs text-gray-500"><span class="w-2 h-2 rounded-full bg-green-500"></span> Normal</span>
+                    <span class="flex items-center gap-1 text-xs text-gray-500"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Warning</span>
+                    <span class="flex items-center gap-1 text-xs text-gray-500"><span class="w-2 h-2 rounded-full bg-red-500"></span> Critical</span>
+                </div>
+                <a href="{{ route('govt_admin.hospitals.index') }}" class="text-indigo-600 text-sm font-semibold hover:underline">View All</a>
             </div>
         </div>
         <div class="overflow-x-auto">

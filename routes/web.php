@@ -82,6 +82,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/appointments/{appointment_id}/approve', [DoctorDashboardController::class, 'approveAppointment'])->name('appointment.approve');
         Route::get('/emergency/{id}', [DoctorDashboardController::class, 'viewEmergency'])->name('emergency.view');
         Route::post('/emergency/{id}/triage', [DoctorDashboardController::class, 'storeTriage'])->name('emergency.triage');
+
+        // Profile Management
+        Route::get('/profile', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'show'])->name('profile.show');
+        Route::get('/profile/edit', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'edit'])->name('profile.edit');
+        Route::post('/profile', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'update'])->name('profile.update');
     });
 
     // ==========================================
@@ -137,6 +142,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Disease Monitoring
         Route::get('/disease-monitoring', [\App\Http\Controllers\Govt\DiseaseMonitoringController::class, 'index'])->name('disease_monitoring.index');
         Route::post('/disease-monitoring/{id}/status', [\App\Http\Controllers\Govt\DiseaseMonitoringController::class, 'updateStatus'])->name('disease_monitoring.update_status');
+
+        // Doctor Verification
+        Route::get('/doctors', [\App\Http\Controllers\Govt\GovtAdminDashboardController::class, 'doctors'])->name('doctors.index');
+        Route::get('/doctors/{id}', [\App\Http\Controllers\Govt\GovtAdminDashboardController::class, 'showDoctor'])->name('doctors.show');
+        Route::post('/doctors/{id}/verify', [\App\Http\Controllers\Govt\GovtAdminDashboardController::class, 'verifyDoctor'])->name('doctors.verify');
+
+        // Hospital Monitoring
+        Route::get('/hospitals', [\App\Http\Controllers\Govt\GovtAdminDashboardController::class, 'hospitals'])->name('hospitals.index');
     });
 
     // ==========================================
@@ -146,6 +159,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Ambulance\AmbulanceDashboardController::class, 'index'])->name('dashboard');
         Route::post('/emergency/{id}/status', [\App\Http\Controllers\Ambulance\AmbulanceDashboardController::class, 'updateStatus'])->name('emergency.status');
     });
+
+    // Public Doctor Profiles
+    Route::get('/doctor-profile/{id}', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'publicShow'])->name('doctor.public_profile');
 });
 
 // 4. Standard Profile Routes
