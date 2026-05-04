@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="space-y-6">
-    {{-- Stats Overview --}}
+    {{-- Stats Overview --}} 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-6">
             <div class="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-500">

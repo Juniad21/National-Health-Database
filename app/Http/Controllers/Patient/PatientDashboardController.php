@@ -139,7 +139,7 @@ class PatientDashboardController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
         
-        // Group records by type
+        // Group records by type 
         $records = $allRecords->groupBy('record_type');
         
         return view('patient.medical_records', [

@@ -54,7 +54,7 @@ class DoctorDashboardController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        // Group records by type for display
+        // Group records by type for display 
         $records = $medicalRecords->groupBy('record_type');
 
         // Fetch lab tests for the consultation form
