@@ -252,13 +252,13 @@
                                         @endif
                                     </td>
                                     <td class="py-4 text-right">
-                                        @if(strtolower($app->status) === 'completed' && !$app->review)
+                                        @if(strtolower($app->status) === 'completed' && !$app->evaluation)
                                             <button @click="$dispatch('open-review-modal', { id: {{ $app->id }}, doctor: 'Dr. {{ $app->doctor->first_name }} {{ $app->doctor->last_name }}' })" 
                                                 class="text-xs font-bold text-teal-600 hover:text-teal-800 bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 transition-all">
                                                 Leave Feedback
                                             </button>
-                                        @elseif($app->review)
-                                            <span class="text-xs font-bold text-gray-400">Feedback Left ⭐ {{ $app->review->rating }}</span>
+                                        @elseif($app->evaluation)
+                                            <span class="text-xs font-bold text-gray-400">Feedback Left ⭐ {{ $app->evaluation->rating_1_to_5 }}</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -296,8 +296,9 @@ x-cloak>
                 <h3 class="text-2xl font-black text-gray-800 mb-2">Leave Feedback</h3>
                 <p class="text-gray-500 text-sm mb-6">How was your appointment with <span class="font-bold text-teal-600" x-text="doctorName"></span>?</p>
 
-                <form :action="'/patient/appointment/' + appointmentId + '/review'" method="POST" class="space-y-6">
+                <form action="{{ route('patient.evaluation.store') }}" method="POST" class="space-y-6">
                     @csrf
+                    <input type="hidden" name="appointment_id" :value="appointmentId">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-3">Your Rating</label>
                         <div class="flex gap-2">
@@ -314,7 +315,7 @@ x-cloak>
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Your Experience</label>
-                        <textarea name="comment" rows="4" placeholder="Share details about your consultation..." 
+                        <textarea name="feedback_text" rows="4" placeholder="Share details about your consultation..." 
                             class="w-full rounded-2xl border-gray-200 bg-gray-50 text-sm focus:ring-teal-500 focus:border-teal-500"></textarea>
                     </div>
 

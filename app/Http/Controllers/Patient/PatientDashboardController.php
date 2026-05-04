@@ -72,7 +72,7 @@ class PatientDashboardController extends Controller
         $patient = Auth::user()->patient;
         
         $appointments = \App\Models\Appointment::where('patient_id', $patient->id)
-            ->with(['doctor', 'hospital'])
+            ->with(['doctor', 'hospital', 'evaluation'])
             ->orderBy('date', 'desc')
             ->get();
         
