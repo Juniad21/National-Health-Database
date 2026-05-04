@@ -45,6 +45,8 @@ class PatientProfileController extends Controller
             'smoking_status' => 'nullable|in:never,former,current',
             'alcohol_status' => 'nullable|in:none,occasional,moderate,heavy',
             'activity_level' => 'nullable|in:sedentary,light,moderate,active,very_active',
+            'insurance_provider' => 'nullable|string|max:255',
+            'insurance_policy_number' => 'nullable|string|max:255',
         ]);
 
         $patient = Auth::user()->patient;

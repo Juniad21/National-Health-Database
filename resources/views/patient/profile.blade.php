@@ -141,6 +141,21 @@
                 </div>
             </div>
 
+            {{-- Insurance Information --}}
+            <div class="space-y-4">
+                <h3 class="text-xs font-black text-teal-600 uppercase tracking-[0.2em]">Insurance Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Insurance Provider</label>
+                        <input type="text" name="insurance_provider" value="{{ old('insurance_provider', $patient->insurance_provider) }}" placeholder="e.g. MetLife, Green Delta" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Policy Number</label>
+                        <input type="text" name="insurance_policy_number" value="{{ old('insurance_policy_number', $patient->insurance_policy_number) }}" placeholder="e.g. POL-12345678" class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                </div>
+            </div>
+
             {{-- Lifestyle --}}
             <div class="space-y-4">
                 <h3 class="text-xs font-black text-teal-600 uppercase tracking-[0.2em]">Lifestyle</h3>
