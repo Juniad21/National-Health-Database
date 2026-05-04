@@ -17,6 +17,7 @@ class Patient extends Model
         'allergies', 'medical_conditions', 'current_medications',
         'past_surgeries', 'family_history', 'lifestyle_notes',
         'smoking_status', 'alcohol_status', 'activity_level',
+        'insurance_provider', 'insurance_policy_number',
     ];
 
     protected $casts = [
