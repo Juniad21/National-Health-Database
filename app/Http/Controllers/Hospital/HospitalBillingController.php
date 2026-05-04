@@ -86,7 +86,26 @@ class HospitalBillingController extends Controller
             'notes' => $validated['notes'],
         ]);
 
-        AuditLogService::logHospitalAction('bill created', "Created bill {$bill->bill_number} for total $total", Bill::class, $bill->id);
+        AuditLogService::logAction('bill created', "Created bill {$bill->bill_number} for total $total", 'billing', 'medium', Bill::class, $bill->id);
+
+        // Auto-create insurance claim if patient has insurance
+        $patient = \App\Models\Patient::find($validated['patient_id']);
+        if ($patient && $patient->insurance_provider) {
+            $claim = \App\Models\InsuranceClaim::create([
+                'hospital_id' => $hospital->id,
+                'patient_id' => $patient->id,
+                'bill_id' => $bill->id,
+                'claim_amount' => $total,
+                'insurance_provider' => $patient->insurance_provider,
+                'policy_number' => $patient->insurance_policy_number ?? 'N/A',
+                'claim_status' => 'pending',
+                'remarks' => "Auto-generated claim from patient profile policy: {$patient->insurance_policy_number}",
+            ]);
+            
+            AuditLogService::logAction('claim submitted', "Auto-submitted claim for Bill {$bill->bill_number} to {$patient->insurance_provider}", 'billing', 'medium', \App\Models\InsuranceClaim::class, $claim->id);
+            
+            return redirect()->route('hospital.billing.index')->with('success', "Bill created successfully. An automatic insurance claim to {$patient->insurance_provider} has been generated.");
+        }
 
         return redirect()->route('hospital.billing.index')->with('success', 'Bill created successfully.');
     }
@@ -116,7 +135,7 @@ class HospitalBillingController extends Controller
             'payment_status' => $status,
         ]);
 
-        AuditLogService::logHospitalAction('payment status updated', "Updated payment for bill {$bill->bill_number} to $status", Bill::class, $bill->id);
+        AuditLogService::logAction('payment status updated', "Updated payment for bill {$bill->bill_number} to $status", 'billing', 'low', Bill::class, $bill->id);
 
         return redirect()->back()->with('success', 'Payment status updated successfully.');
     }
@@ -159,7 +178,7 @@ class HospitalBillingController extends Controller
             'remarks' => $validated['remarks'],
         ]);
 
-        AuditLogService::logHospitalAction('insurance claim submitted', "Submitted claim for {$validated['insurance_provider']}", InsuranceClaim::class, $claim->id);
+        AuditLogService::logAction('insurance claim submitted', "Submitted claim for {$validated['insurance_provider']}", 'billing', 'medium', InsuranceClaim::class, $claim->id);
 
         return redirect()->back()->with('success', 'Insurance claim submitted successfully.');
     }
@@ -170,7 +189,7 @@ class HospitalBillingController extends Controller
         $claim = InsuranceClaim::where('hospital_id', $hospital->id)->findOrFail($id);
 
         $validated = $request->validate([
-            'claim_status' => 'required|in:pending,approved,rejected,settled',
+            'claim_status' => 'required|in:pending,approved,rejected',
             'approved_amount' => 'nullable|numeric|min:0',
             'remarks' => 'nullable|string'
         ]);
@@ -181,7 +200,7 @@ class HospitalBillingController extends Controller
             'remarks' => $validated['remarks'] ?? $claim->remarks,
         ]);
 
-        AuditLogService::logHospitalAction('insurance claim status updated', "Updated claim status to {$validated['claim_status']}", InsuranceClaim::class, $claim->id);
+        AuditLogService::logAction('insurance claim status updated', "Updated claim status to {$validated['claim_status']}", 'billing', 'medium', InsuranceClaim::class, $claim->id);
 
         return redirect()->back()->with('success', 'Insurance claim status updated successfully.');
     }

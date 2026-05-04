@@ -101,7 +101,6 @@
                                         <option value="pending" {{ $claim->claim_status == 'pending' ? 'selected' : '' }}>Pending</option>
                                         <option value="approved" {{ $claim->claim_status == 'approved' ? 'selected' : '' }}>Approved</option>
                                         <option value="rejected" {{ $claim->claim_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                                        <option value="settled" {{ $claim->claim_status == 'settled' ? 'selected' : '' }}>Settled</option>
                                     </select>
                                     
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Approved Amount</label>
