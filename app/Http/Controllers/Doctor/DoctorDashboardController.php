@@ -305,26 +305,61 @@ class DoctorDashboardController extends Controller
     public function reviews()
     {
         $doctor = Auth::user()->doctor;
+        
+        // Fetch raw evaluations
         $evaluations = \App\Models\DoctorEvaluation::where('doctor_id', $doctor->id)
             ->with('patient')
             ->orderBy('created_at', 'desc')
             ->get();
         
-        // Map evaluation fields to match the view's expectation of $review->rating and $review->comment
+        // Transform the data for the new unified interface
         $reviews = $evaluations->map(function($eval) {
+            // Auto-generate tags based on rating and comment length for the new UI
+            $tags = collect();
+            if ($eval->rating_1_to_5 == 5) $tags->push('Excellent Care');
+            if ($eval->rating_1_to_5 >= 4 && strlen($eval->feedback_text) > 20) $tags->push('Detailed Feedback');
+            if ($eval->rating_1_to_5 <= 2) $tags->push('Needs Attention');
+
             return (object) [
+                'id' => $eval->id,
                 'patient' => $eval->patient,
                 'rating' => $eval->rating_1_to_5,
                 'comment' => $eval->feedback_text,
+                'tags' => $tags,
                 'created_at' => $eval->created_at,
             ];
         });
         
-        $averageRating = $reviews->avg('rating');
+        // Compute Advanced Analytics
+        $totalReviews = $reviews->count();
+        $averageRating = $totalReviews > 0 ? $reviews->avg('rating') : 0;
+        
+        // Rating Distribution (5 to 1)
+        $distribution = [
+            5 => $reviews->where('rating', 5)->count(),
+            4 => $reviews->where('rating', 4)->count(),
+            3 => $reviews->where('rating', 3)->count(),
+            2 => $reviews->where('rating', 2)->count(),
+            1 => $reviews->where('rating', 1)->count(),
+        ];
+
+        // Calculate percentages for the progress bars
+        $distributionPercentages = [];
+        foreach ($distribution as $stars => $count) {
+            $distributionPercentages[$stars] = $totalReviews > 0 ? round(($count / $totalReviews) * 100) : 0;
+        }
+        
+        $positivePercentage = $totalReviews > 0 
+            ? round(($reviews->where('rating', '>=', 4)->count() / $totalReviews) * 100) 
+            : 0;
         
         return view('doctor.reviews', [
             'reviews' => $reviews,
-            'averageRating' => $averageRating
+            'totalReviews' => $totalReviews,
+            'averageRating' => $averageRating,
+            'distribution' => $distribution,
+            'distributionPercentages' => $distributionPercentages,
+            'positivePercentage' => $positivePercentage
         ]);
     }
 }

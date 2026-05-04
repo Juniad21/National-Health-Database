@@ -138,59 +138,94 @@
 
     </div>
 
-    <!-- Rating Modal -->
+    <!-- Premium Rating Modal -->
     @if($unratedAppointment)
-        <div x-data="{ open: true }" x-show="open"
-            class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/75 backdrop-blur-sm">
+        <div x-data="{ open: true, rating: 0, hoverRating: 0, step: 1 }" x-show="open"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 backdrop-blur-none"
+            x-transition:enter-end="opacity-100 backdrop-blur-md"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 backdrop-blur-md"
+            x-transition:leave-end="opacity-0 backdrop-blur-none"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4">
+            
             <div @click.away="open = false"
-                class="relative w-full max-w-md p-6 bg-white rounded-3xl shadow-2xl transform transition-all">
-                <div class="text-center mb-6">
-                    <div
-                        class="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
-                            </path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800">Rate Your Visit</h3>
-                    <p class="text-gray-500 text-sm mt-1">How was your recent consultation with Dr.
-                        {{ $unratedAppointment->doctor->first_name }}?</p>
-                </div>
-
-                <form action="{{ route('patient.evaluation.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="appointment_id" value="{{ $unratedAppointment->id }}">
-
-                    <div class="flex justify-center gap-2 mb-6" x-data="{ rating: 0, hoverRating: 0 }">
-                        <input type="hidden" name="rating" x-model="rating">
-                        <template x-for="i in 5">
-                            <svg @click="rating = i" @mouseenter="hoverRating = i" @mouseleave="hoverRating = 0"
-                                class="w-10 h-10 cursor-pointer transition-colors"
-                                :class="(hoverRating >= i || (!hoverRating && rating >= i)) ? 'text-yellow-400' : 'text-gray-200'"
-                                fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200 transform"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+                class="relative w-full max-w-lg bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-white/50 overflow-hidden">
+                
+                {{-- Decorative Background --}}
+                <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-teal-400 to-emerald-500 opacity-20 blur-2xl rounded-t-[2rem]"></div>
+                
+                <div class="p-8 relative z-10">
+                    <div class="text-center mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-teal-400 to-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-teal-500/30 transform transition-transform hover:scale-110 duration-300">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                             </svg>
-                        </template>
+                        </div>
+                        <h3 class="text-3xl font-black text-gray-900 tracking-tight">How was your visit?</h3>
+                        <p class="text-gray-500 mt-2 font-medium">Your recent consultation with <span class="font-bold text-teal-700">Dr. {{ $unratedAppointment->doctor->first_name }} {{ $unratedAppointment->doctor->last_name }}</span></p>
                     </div>
 
-                    <div class="mb-6">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Additional Feedback (Optional)</label>
-                        <textarea name="feedback_text" rows="3"
-                            class="w-full border border-gray-200 rounded-xl focus:ring-teal-500 focus:border-teal-500 text-sm shadow-sm"
-                            placeholder="Tell us about your experience..."></textarea>
-                    </div>
+                    <form action="{{ route('patient.evaluation.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="appointment_id" value="{{ $unratedAppointment->id }}">
+                        <input type="hidden" name="rating" x-model="rating">
 
-                    <button type="submit"
-                        class="w-full py-3 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 shadow-md transition-all">
-                        Submit Feedback
-                    </button>
-                    <button type="button" @click="open = false"
-                        class="w-full py-2 mt-2 text-gray-500 font-semibold hover:text-gray-800 transition-colors text-sm">
-                        Dismiss
-                    </button>
-                </form>
+                        {{-- Step 1: Star Rating --}}
+                        <div x-show="step === 1" x-transition.opacity.duration.300ms class="space-y-6">
+                            <div class="flex justify-center gap-3">
+                                <template x-for="i in 5">
+                                    <svg @click="rating = i; setTimeout(() => step = 2, 400)" 
+                                         @mouseenter="hoverRating = i" 
+                                         @mouseleave="hoverRating = 0"
+                                        class="w-12 h-12 cursor-pointer transition-all duration-300 transform"
+                                        :class="{
+                                            'text-yellow-400 scale-110 drop-shadow-md': hoverRating >= i || (!hoverRating && rating >= i),
+                                            'text-gray-200 hover:text-yellow-200': hoverRating < i && (!hoverRating && rating < i)
+                                        }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                </template>
+                            </div>
+                            <div class="text-center h-6">
+                                <p x-show="hoverRating === 1 || (!hoverRating && rating === 1)" class="text-rose-500 font-bold animate-pulse">Needs Improvement</p>
+                                <p x-show="hoverRating === 2 || (!hoverRating && rating === 2)" class="text-orange-500 font-bold animate-pulse">Fair</p>
+                                <p x-show="hoverRating === 3 || (!hoverRating && rating === 3)" class="text-yellow-600 font-bold animate-pulse">Good</p>
+                                <p x-show="hoverRating === 4 || (!hoverRating && rating === 4)" class="text-teal-600 font-bold animate-pulse">Very Good</p>
+                                <p x-show="hoverRating === 5 || (!hoverRating && rating === 5)" class="text-emerald-500 font-bold animate-pulse">Exceptional Care!</p>
+                            </div>
+                            <button type="button" @click="open = false" class="w-full py-3 mt-4 text-gray-400 font-bold hover:text-gray-600 transition-colors">
+                                Skip for now
+                            </button>
+                        </div>
+
+                        {{-- Step 2: Written Feedback --}}
+                        <div x-show="step === 2" style="display: none;" x-transition.opacity.duration.300ms>
+                            <div class="bg-gray-50/50 rounded-2xl p-1 mb-6 border border-gray-100">
+                                <textarea name="feedback_text" rows="4"
+                                    class="w-full bg-transparent border-0 focus:ring-0 text-gray-700 placeholder-gray-400 resize-none px-4 py-3 font-medium"
+                                    placeholder="What made your experience good or bad? Any details help us improve."></textarea>
+                            </div>
+                            
+                            <div class="flex gap-4">
+                                <button type="button" @click="step = 1" class="px-6 py-4 rounded-xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">
+                                    Back
+                                </button>
+                                <button type="submit" class="flex-1 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-black rounded-xl hover:from-teal-600 hover:to-emerald-600 shadow-lg shadow-teal-500/30 transform hover:-translate-y-0.5 transition-all">
+                                    Publish Feedback
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
             </div>
         </div>
     @endif
