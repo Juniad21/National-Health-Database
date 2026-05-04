@@ -43,11 +43,11 @@
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div class="bg-gray-50 rounded-2xl p-3 border border-gray-100 text-center">
                                 <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Total Amount</p>
-                                <p class="text-xl font-black text-gray-800">${{ number_format($bill->total_amount, 2) }}</p>
+                                <p class="text-xl font-black text-gray-800">৳{{ number_format($bill->total_amount, 2) }}</p>
                             </div>
                             <div class="bg-gray-50 rounded-2xl p-3 border border-gray-100 text-center">
                                 <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Due Amount</p>
-                                <p class="text-xl font-black {{ $bill->due_amount > 0 ? 'text-red-600' : 'text-emerald-600' }}">${{ number_format($bill->due_amount, 2) }}</p>
+                                <p class="text-xl font-black {{ $bill->due_amount > 0 ? 'text-red-600' : 'text-emerald-600' }}">৳{{ number_format($bill->due_amount, 2) }}</p>
                             </div>
                         </div>
 
@@ -58,7 +58,7 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-500">Paid Amount</span>
-                                <span class="font-semibold text-gray-800">${{ number_format($bill->paid_amount, 2) }}</span>
+                                <span class="font-semibold text-gray-800">৳{{ number_format($bill->paid_amount, 2) }}</span>
                             </div>
                         </div>
 
@@ -125,7 +125,7 @@
                             <div class="bg-teal-50 rounded-2xl p-5 border border-teal-100">
                                 <div class="flex justify-between items-center">
                                     <span class="text-teal-800 font-semibold" x-text="selectedBill.hospital.name"></span>
-                                    <span class="text-teal-600 font-black text-xl" x-text="'$' + parseFloat(selectedBill.due_amount).toFixed(2)"></span>
+                                    <span class="text-teal-600 font-black text-xl" x-text="'৳' + parseFloat(selectedBill.due_amount).toFixed(2)"></span>
                                 </div>
                                 <p class="text-teal-600 text-xs mt-1" x-text="'Bill #' + selectedBill.bill_number"></p>
                             </div>
@@ -170,13 +170,23 @@
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1" x-text="paymentMethod === 'bkash' ? 'bKash Number' : 'Rocket Number'"></label>
                                     <input type="text" placeholder="017********" class="w-full border-gray-200 rounded-xl">
                                 </div>
-                                <div class="p-3 bg-gray-50 rounded-xl text-xs text-gray-500">
-                                    A verification code (OTP) will be sent to your mobile number.
-                                </div>
+
                             </div>
 
-                            <form x-ref="paymentForm" method="POST" :action="'/patient/bills/' + selectedBill.id + '/pay'">
+                            <form x-ref="paymentForm" method="POST" :action="'/patient/bills/' + selectedBill.id + '/pay'" class="space-y-4 pt-4 border-t border-gray-100">
                                 @csrf
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Amount to Pay</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-lg font-black">৳</span>
+                                        </div>
+                                        <input type="number" step="0.01" name="payment_amount" :max="selectedBill.due_amount" :value="selectedBill.due_amount" required
+                                            class="w-full pl-8 py-3 border-gray-200 rounded-xl focus:ring-teal-500 focus:border-teal-500 font-black text-gray-800 text-lg">
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2 font-medium">You can pay partially. Any remaining amount will stay as due.</p>
+                                </div>
+
                                 <button type="button" @click="confirmPayment()" 
                                     class="w-full bg-teal-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-teal-100 hover:bg-teal-700 transition-all flex items-center justify-center gap-2"
                                     :disabled="processing">

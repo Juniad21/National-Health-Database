@@ -170,23 +170,41 @@ class PatientDashboardController extends Controller
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
-        // Mock payment processing
+        $validated = $request->validate([
+            'payment_amount' => 'required|numeric|min:0.01|max:' . $bill->due_amount
+        ]);
+
+        $paymentAmount = $validated['payment_amount'];
+        $newPaidAmount = $bill->paid_amount + $paymentAmount;
+        $newDueAmount = $bill->total_amount - $newPaidAmount;
+        
+        // Ensure precision issues don't cause negative due amount
+        if ($newDueAmount <= 0.01) {
+            $newDueAmount = 0;
+        }
+
+        $paymentStatus = $newDueAmount == 0 ? 'paid' : 'partially_paid';
+
         $bill->update([
-            'paid_amount' => $bill->total_amount,
-            'due_amount' => 0,
-            'payment_status' => 'paid',
+            'paid_amount' => $newPaidAmount,
+            'due_amount' => $newDueAmount,
+            'payment_status' => $paymentStatus,
         ]);
 
         \App\Services\AuditLogService::logAction(
             action: 'payment recorded',
-            description: "Patient paid bill #{$bill->bill_number} of amount {$bill->total_amount}",
+            description: "Patient paid \${$paymentAmount} towards bill #{$bill->bill_number}",
             module: 'billing',
             severity: 'medium',
             targetType: \App\Models\Bill::class,
             targetId: $bill->id
         );
 
-        return redirect()->back()->with('success', 'Payment successful! Your bill has been marked as paid.');
+        $message = $paymentStatus == 'paid' 
+            ? 'Payment successful! Your bill has been fully paid.'
+            : 'Partial payment successful! Remaining balance is ৳' . number_format($newDueAmount, 2);
+
+        return redirect()->back()->with('success', $message);
     }
 
     public function consents()
