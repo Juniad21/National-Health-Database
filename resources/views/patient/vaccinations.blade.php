@@ -79,7 +79,7 @@
                                         @if($vaccine->status !== 'taken')
                                             <form action="{{ route('patient.vaccinations.mark_taken', $vaccine->id) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" onclick="return confirm('Confirm that you have received this vaccine dose?')" class="text-xs font-black text-teal-600 hover:text-teal-800 transition-colors bg-teal-50 px-4 py-2 rounded-xl border border-teal-100">
+                                                <button type="submit" class="text-xs font-black text-teal-600 hover:text-teal-800 transition-colors bg-teal-50 px-4 py-2 rounded-xl border border-teal-100">
                                                     Mark Administered
                                                 </button>
                                             </form>
