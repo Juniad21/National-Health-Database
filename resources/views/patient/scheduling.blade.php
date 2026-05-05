@@ -58,7 +58,7 @@
 
 <div x-data="{
     searchQuery: '',
-    selectedSpecialty: 'All',
+    selectedSpecialty: new URLSearchParams(window.location.search).get('specialty') || 'All',
     selectedHospital: 'All',
     selectedDoctor: null,
     showBookingForm: false,

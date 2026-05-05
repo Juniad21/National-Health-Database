@@ -212,7 +212,8 @@
                                     Next Steps
                                 </h4>
                                 <p class="text-slate-400 font-bold text-sm leading-relaxed mb-6" x-text="assessmentResult?.analysis_results.recommendation"></p>
-                                <a href="{{ route('patient.scheduling') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all">
+                                <a :href="'{{ route('patient.scheduling') }}?specialty=' + encodeURIComponent(assessmentResult?.suggested_specialty)" 
+                                   class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all">
                                     Book Consultation
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                                 </a>
