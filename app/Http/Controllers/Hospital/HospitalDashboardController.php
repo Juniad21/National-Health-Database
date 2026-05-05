@@ -15,7 +15,12 @@ class HospitalDashboardController extends Controller
         
         $emergencies = \App\Models\Emergency::where(function($q) use ($hospital) {
                 $q->where('hospital_id', $hospital->id)
-                  ->orWhere('status', 'Sent');
+                  ->orWhere(function($sub) use ($hospital) {
+                      $sub->where('status', 'Sent')
+                          ->whereHas('targetHospitals', function($th) use ($hospital) {
+                              $th->where('hospital_id', $hospital->id);
+                          });
+                  });
             })
             ->where('status', '!=', 'resolved')
             ->with('patient')
@@ -107,8 +112,15 @@ class HospitalDashboardController extends Controller
     public function emergencies()
     {
         $hospital = Auth::user()->hospital;
-        $emergencies = \App\Models\Emergency::where('hospital_id', $hospital->id)
-            ->orWhereNull('hospital_id') // Show sent alerts that aren't assigned yet
+        $emergencies = \App\Models\Emergency::where(function($q) use ($hospital) {
+                $q->where('hospital_id', $hospital->id)
+                  ->orWhere(function($sub) use ($hospital) {
+                      $sub->whereNull('hospital_id')
+                          ->whereHas('targetHospitals', function($th) use ($hospital) {
+                              $th->where('hospital_id', $hospital->id);
+                          });
+                  });
+            })
             ->with('patient')
             ->orderBy('created_at', 'desc')
             ->get();

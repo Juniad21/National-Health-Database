@@ -76,4 +76,9 @@ class Emergency extends Model
     {
         return $this->hasMany(AmbulanceAssignment::class, 'emergency_alert_id');
     }
+
+    public function targetHospitals()
+    {
+        return $this->belongsToMany(Hospital::class, 'emergency_target_hospitals');
+    }
 }

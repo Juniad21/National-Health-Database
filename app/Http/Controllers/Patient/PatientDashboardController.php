@@ -394,7 +394,7 @@ class PatientDashboardController extends Controller
 
         $emergency = \App\Models\Emergency::create([
             'patient_id' => $patient->id,
-            'status' => 'Sent',
+            'status' => 'Pending Dispatch',
             'emergency_type' => $validated['emergency_type'],
             'severity' => $validated['severity'],
             'symptoms' => $validated['symptoms'],

@@ -85,7 +85,9 @@ class GovtAdminDashboardController extends Controller
             'rejected' => $emergencies->where('status', 'Rejected')->count(),
         ];
 
-        return view('govt_admin.emergencies.index', compact('emergencies', 'stats'));
+        $allHospitals = Hospital::orderBy('name')->get();
+
+        return view('govt_admin.emergencies.index', compact('emergencies', 'stats', 'allHospitals'));
     }
 
     public function doctors(Request $request)
@@ -181,5 +183,19 @@ class GovtAdminDashboardController extends Controller
         ];
 
         return view('govt_admin.ambulances.index', compact('ambulances', 'stats'));
+    }
+
+    public function dispatchEmergency(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'hospital_ids' => 'required|array',
+            'hospital_ids.*' => 'exists:hospitals,id',
+        ]);
+
+        $emergency = \App\Models\Emergency::findOrFail($id);
+        $emergency->targetHospitals()->sync($validated['hospital_ids']);
+        $emergency->update(['status' => 'Sent']);
+
+        return back()->with('success', 'Emergency alert dispatched to selected hospitals.');
     }
 }

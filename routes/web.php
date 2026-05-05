@@ -164,6 +164,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/audit-logs', [\App\Http\Controllers\Govt\AuditLogController::class, 'index'])->name('audit_logs');
         Route::get('/audit-logs/export', [\App\Http\Controllers\Govt\AuditLogController::class, 'exportCsv'])->name('audit_logs.export');
         Route::get('/emergencies', [GovtAdminDashboardController::class, 'emergencies'])->name('emergencies.index');
+        Route::post('/emergencies/{id}/dispatch', [GovtAdminDashboardController::class, 'dispatchEmergency'])->name('emergencies.dispatch');
 
         // Disease Monitoring
         Route::get('/disease-monitoring', [\App\Http\Controllers\Govt\DiseaseMonitoringController::class, 'index'])->name('disease_monitoring.index');
