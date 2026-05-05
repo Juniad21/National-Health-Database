@@ -107,7 +107,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Left: Doctor Results -->
-        <div class="lg:col-span-2 space-y-6">
+        <div :class="showBookingForm ? 'lg:col-span-2' : 'lg:col-span-3'" class="space-y-6 transition-all duration-500">
             <div class="flex items-center justify-between px-4">
                 <h3 class="text-xl font-black text-slate-800 tracking-tight">Available Specialists <span class="text-slate-300 ml-2 text-sm font-bold" x-text="'(' + filteredDoctors.length + ' found)'"></span></h3>
                 <div class="flex gap-2">
