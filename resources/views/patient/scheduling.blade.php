@@ -2,6 +2,33 @@
 
 @section('header_title', 'Appointment Explorer')
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-calendar {
+            background: #ffffff !important;
+            border-radius: 1.5rem !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid #f1f5f9 !important;
+            font-family: inherit !important;
+        }
+        .flatpickr-day.selected {
+            background: #14b8a6 !important;
+            border-color: #14b8a6 !important;
+        }
+        .flatpickr-day:hover {
+            background: #f0fdfa !important;
+        }
+        .flatpickr-months .flatpickr-month {
+            color: #0f172a !important;
+            fill: #0f172a !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            font-weight: 800 !important;
+        }
+    </style>
+@endpush
+
 @section('content')
 
 {{-- "DOCTOR CALLED YOU" NOTIFICATION BANNER --}}
@@ -272,8 +299,8 @@
 
                         <div class="space-y-3">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Select Date</label>
-                            <input type="date" name="date" required min="{{ date('Y-m-d') }}"
-                                class="w-full bg-white/5 border-white/10 rounded-2xl py-5 px-6 text-sm font-black text-white focus:ring-teal-500 focus:border-teal-500 transition-all">
+                            <input type="text" name="date" id="booking-calendar" required placeholder="Choose your visit date..."
+                                class="w-full bg-white/5 border-white/10 rounded-2xl py-5 px-6 text-sm font-black text-white focus:ring-teal-500 focus:border-teal-500 transition-all cursor-pointer">
                         </div>
 
                         <div class="space-y-3">
@@ -370,4 +397,21 @@ x-cloak>
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr("#booking-calendar", {
+                minDate: "today",
+                dateFormat: "Y-m-d",
+                disableMobile: "true",
+                animate: true,
+                locale: {
+                    firstDayOfWeek: 1
+                }
+            });
+        });
+    </script>
+@endpush
 @endsection
