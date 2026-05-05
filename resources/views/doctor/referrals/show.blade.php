@@ -20,10 +20,6 @@
             <div class="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/50 border border-slate-50">
                 <div class="flex items-center justify-between mb-8">
                     <h3 class="text-2xl font-black text-slate-800 tracking-tight">Clinical Justification</h3>
-                    <span class="px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest 
-                        {{ $referral->priority === 'emergency' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600' }}">
-                        {{ $referral->priority }} Priority
-                    </span>
                 </div>
                 
                 <div class="space-y-6">

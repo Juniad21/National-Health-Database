@@ -18,32 +18,6 @@
         <form action="{{ route('doctor.referrals.store', $patientUser->id) }}" method="POST" class="space-y-8">
             @csrf
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {{-- Referral Type --}}
-                <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Referral Type</label>
-                    <select name="referral_type" required class="w-full py-4 px-6 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all">
-                        <option value="specialist">Specialist Consultation</option>
-                        <option value="hospital">Hospital Transfer</option>
-                        <option value="department">Inter-Departmental</option>
-                        <option value="diagnostic">Diagnostic/Pathology</option>
-                        <option value="emergency">Emergency Stabilization</option>
-                    </select>
-                    @error('referral_type') <p class="text-rose-500 text-[10px] font-bold ml-4">{{ $message }}</p> @enderror
-                </div>
-
-                {{-- Priority --}}
-                <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Priority Level</label>
-                    <select name="priority" required class="w-full py-4 px-6 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all">
-                        <option value="normal">Normal / Routine</option>
-                        <option value="urgent">Urgent / High Priority</option>
-                        <option value="emergency">Life-Threatening / Emergency</option>
-                    </select>
-                    @error('priority') <p class="text-rose-500 text-[10px] font-bold ml-4">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
             <div class="grid grid-cols-1 gap-8">
                 {{-- To Doctor --}}
                 <div class="space-y-3">
@@ -59,7 +33,7 @@
 
             {{-- Department --}}
             <div class="space-y-3">
-                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Target Department / Lab</label>
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Target Department / Lab (Optional)</label>
                 <input type="text" name="department" placeholder="e.g. Cardiology, Hematology Lab..." class="w-full py-4 px-6 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all">
             </div>
 

@@ -5,18 +5,20 @@
 @section('content')
 <div class="space-y-8">
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Created by Me</p>
             <p class="text-3xl font-black text-slate-800">{{ $createdReferrals->count() }}</p>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <div class="flex items-center justify-between p-3 bg-slate-800 rounded-xl">
+                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wide">Sent (Pending)</span>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-black">{{ $referralStats['sent_pending'] }}</span>
+                </div>
+            </div>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Received by Me</p>
             <p class="text-3xl font-black text-teal-600">{{ $receivedReferrals->count() }}</p>
-        </div>
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Urgent Referrals</p>
-            <p class="text-3xl font-black text-rose-500">{{ $receivedReferrals->where('priority', 'emergency')->count() + $createdReferrals->where('priority', 'emergency')->count() }}</p>
         </div>
     </div>
 
@@ -33,8 +35,6 @@
                     <thead>
                         <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
                             <th class="pb-4 px-4">Patient</th>
-                            <th class="pb-4 px-4">Type</th>
-                            <th class="pb-4 px-4">Priority</th>
                             <th class="pb-4 px-4">From Doctor</th>
                             <th class="pb-4 px-4">Status</th>
                             <th class="pb-4 px-4 text-right">Action</th>
@@ -46,13 +46,6 @@
                                 <td class="py-5 px-4">
                                     <p class="font-black text-slate-800 text-sm">{{ $ref->patient->first_name }} {{ $ref->patient->last_name }}</p>
                                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ID: #{{ $ref->patient_id }}</p>
-                                </td>
-                                <td class="py-5 px-4 text-xs font-bold text-slate-600 uppercase">{{ $ref->referral_type }}</td>
-                                <td class="py-5 px-4">
-                                    <span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest 
-                                        {{ $ref->priority === 'emergency' ? 'bg-rose-50 text-rose-600 border border-rose-100' : ($ref->priority === 'urgent' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-600 border border-slate-100') }}">
-                                        {{ $ref->priority }}
-                                    </span>
                                 </td>
                                 <td class="py-5 px-4 text-xs font-bold text-slate-500">Dr. {{ $ref->referredByDoctor->first_name }} {{ $ref->referredByDoctor->last_name }}</td>
                                 <td class="py-5 px-4">
@@ -90,7 +83,6 @@
                         <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
                             <th class="pb-4 px-4">Patient</th>
                             <th class="pb-4 px-4">Referred To</th>
-                            <th class="pb-4 px-4">Priority</th>
                             <th class="pb-4 px-4">Status</th>
                             <th class="pb-4 px-4 text-right">Action</th>
                         </tr>
@@ -109,12 +101,6 @@
                                     @else
                                         <p class="text-xs font-bold text-slate-400 italic">{{ $ref->department ?? 'General' }}</p>
                                     @endif
-                                </td>
-                                <td class="py-5 px-4">
-                                    <span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest 
-                                        {{ $ref->priority === 'emergency' ? 'bg-rose-50 text-rose-600' : ($ref->priority === 'urgent' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-600') }}">
-                                        {{ $ref->priority }}
-                                    </span>
                                 </td>
                                 <td class="py-5 px-4">
                                     <span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest">{{ $ref->status }}</span>

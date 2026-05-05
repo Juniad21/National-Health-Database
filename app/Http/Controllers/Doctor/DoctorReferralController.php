@@ -60,13 +60,10 @@ class DoctorReferralController extends Controller
     public function store(Request $request, $patientUserId)
     {
         $request->validate([
-            'referral_type' => 'required|in:specialist,hospital,department,diagnostic,emergency',
-            'priority' => 'required|in:normal,urgent,emergency',
             'reason' => 'required|string|min:5|max:2000',
             'clinical_summary' => 'nullable|string|max:3000',
             'recommended_tests' => 'nullable|string|max:2000',
-            'referred_to_doctor_id' => 'nullable|exists:users,id',
-            'referred_to_hospital_id' => 'nullable|exists:users,id',
+            'referred_to_doctor_id' => 'required|exists:users,id',
             'department' => 'nullable|string|max:255',
         ]);
 
@@ -74,10 +71,9 @@ class DoctorReferralController extends Controller
             'patient_id' => $patientUserId,
             'referred_by_doctor_id' => Auth::id(),
             'referred_to_doctor_id' => $request->referred_to_doctor_id,
-            'referred_to_hospital_id' => $request->referred_to_hospital_id,
-            'referral_type' => $request->referral_type,
+            'referral_type' => 'specialist',
             'department' => $request->department,
-            'priority' => $request->priority,
+            'priority' => 'normal',
             'reason' => $request->reason,
             'clinical_summary' => $request->clinical_summary,
             'recommended_tests' => $request->recommended_tests,
