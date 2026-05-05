@@ -272,7 +272,7 @@
 
                         <div class="space-y-3">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Select Date</label>
-                            <input type="date" name="date" required
+                            <input type="date" name="date" required min="{{ date('Y-m-d') }}"
                                 class="w-full bg-white/5 border-white/10 rounded-2xl py-5 px-6 text-sm font-black text-white focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
 
