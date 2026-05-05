@@ -65,7 +65,10 @@
                             <option value="Resolved" {{ request('status') == 'Resolved' ? 'selected' : '' }}>Resolved</option>
                         </select>
                     </div>
-                    <div class="lg:col-span-3 flex justify-end">
+                    <div class="lg:col-span-3 flex justify-end items-center gap-4">
+                        @if(request()->anyFilled(['search', 'severity', 'status']))
+                            <a href="{{ route('govt_admin.disease_monitoring.index') }}" class="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">Clear Filters</a>
+                        @endif
                         <button type="submit" class="bg-gray-800 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-black transition-all">Apply Filters</button>
                     </div>
                 </form>

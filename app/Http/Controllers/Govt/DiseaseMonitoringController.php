@@ -84,12 +84,13 @@ class DiseaseMonitoringController extends Controller
             ->take(5)
             ->get();
 
-        // Trends (By Date)
+        // Trends (By Date) - Show latest 10 days
         $trends = DiseaseReport::select(DB::raw('DATE(report_date) as date'), DB::raw('SUM(confirmed_cases) as total'))
             ->groupBy('date')
-            ->orderBy('date', 'asc')
+            ->orderBy('date', 'desc')
             ->take(10)
-            ->get();
+            ->get()
+            ->reverse();
 
         return view('govt_admin.disease_monitoring.index', compact('reports', 'stats', 'districtSummary', 'alerts', 'trends'));
     }
