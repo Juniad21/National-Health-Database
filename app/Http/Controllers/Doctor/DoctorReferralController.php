@@ -46,7 +46,7 @@ class DoctorReferralController extends Controller
         $patientUser = $patientModel->user;
         
         // Load potential recipients
-        $doctors = Doctor::with('user')->get();
+        $doctors = Doctor::with(['user', 'hospital'])->get();
         $hospitals = Hospital::with('user')->get();
         
         return view('doctor.referrals.create', compact('patientUser', 'doctors', 'hospitals'));

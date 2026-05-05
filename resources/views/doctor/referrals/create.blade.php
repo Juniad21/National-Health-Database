@@ -44,25 +44,14 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 gap-8">
                 {{-- To Doctor --}}
                 <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Refer to Specialist (Optional)</label>
-                    <select name="referred_to_doctor_id" class="w-full py-4 px-6 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Refer to Specialist (Includes Facility Info)</label>
+                    <select name="referred_to_doctor_id" required class="w-full py-4 px-6 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all">
                         <option value="">Search National Registry...</option>
                         @foreach($doctors as $doc)
-                            <option value="{{ $doc->user_id }}">Dr. {{ $doc->first_name }} {{ $doc->last_name }} ({{ $doc->specialty ?? 'General' }})</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- To Hospital --}}
-                <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Refer to Facility (Optional)</label>
-                    <select name="referred_to_hospital_id" class="w-full py-4 px-6 bg-slate-50 border-transparent rounded-2xl text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all">
-                        <option value="">Select Facility...</option>
-                        @foreach($hospitals as $hosp)
-                            <option value="{{ $hosp->user_id }}">{{ $hosp->name }}</option>
+                            <option value="{{ $doc->user_id }}">Dr. {{ $doc->first_name }} {{ $doc->last_name }} — {{ $doc->hospital->name ?? 'Private Practice' }} ({{ $doc->specialty ?? 'General' }})</option>
                         @endforeach
                     </select>
                 </div>
