@@ -226,10 +226,6 @@
                     <span class="text-xs font-bold text-slate-300 uppercase tracking-wide">Sent (Pending)</span>
                     <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-black">{{ $referralStats['sent_pending'] }}</span>
                 </div>
-                <div class="flex items-center justify-between p-3 bg-rose-500/10 rounded-xl border border-rose-500/20">
-                    <span class="text-xs font-bold text-rose-300 uppercase tracking-wide">Urgent Alerts</span>
-                    <span class="px-2.5 py-0.5 bg-rose-500 text-white rounded-lg text-[10px] font-black animate-pulse">{{ $referralStats['urgent'] }}</span>
-                </div>
             </div>
         </div>
     </div>

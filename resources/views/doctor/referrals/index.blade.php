@@ -9,12 +9,6 @@
         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Created by Me</p>
             <p class="text-3xl font-black text-slate-800">{{ $createdReferrals->count() }}</p>
-            <div class="mt-4 grid grid-cols-2 gap-2">
-                <div class="flex items-center justify-between p-3 bg-slate-800 rounded-xl">
-                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wide">Sent (Pending)</span>
-                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-black">{{ $referralStats['sent_pending'] }}</span>
-                </div>
-            </div>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Received by Me</p>

@@ -40,7 +40,6 @@ class DoctorDashboardController extends Controller
         $referralStats = [
             'sent_pending' => \App\Models\PatientReferral::where('referred_by_doctor_id', $userId)->where('status', 'pending')->count(),
             'received' => \App\Models\PatientReferral::where('referred_to_doctor_id', $userId)->where('status', 'pending')->count(),
-            'urgent' => \App\Models\PatientReferral::where('referred_to_doctor_id', $userId)->where('status', 'pending')->where('priority', 'emergency')->count(),
         ];
         
         return view('doctor.dashboard', [
