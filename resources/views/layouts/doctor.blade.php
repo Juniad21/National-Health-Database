@@ -51,6 +51,12 @@
                 Patient Feedback
             </a>
 
+            <a href="{{ route('doctor.referrals.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('doctor.referrals.*') ? 'bg-blue-800 text-white font-semibold shadow-md' : 'text-blue-100 hover:bg-blue-800 hover:text-white' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                Referrals
+            </a>
+
         </nav>
 
         <div class="p-4 border-t border-blue-800">

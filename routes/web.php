@@ -7,6 +7,7 @@ use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Hospital\HospitalDashboardController;
 use App\Http\Controllers\Hospital\HospitalAuditLogController;
 use App\Http\Controllers\Hospital\HospitalBillingController;
+use App\Http\Controllers\Doctor\DoctorReferralController;
 use App\Http\Controllers\Govt\GovtAdminDashboardController;
 
 // 1. Redirect Home to Login
@@ -93,6 +94,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profile', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'show'])->name('profile.show');
         Route::get('/profile/edit', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'edit'])->name('profile.edit');
         Route::post('/profile', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'update'])->name('profile.update');
+
+        // Referrals
+        Route::get('/referrals', [DoctorReferralController::class, 'index'])->name('referrals.index');
+        Route::get('/patients/{patient}/refer', [DoctorReferralController::class, 'create'])->name('referrals.create');
+        Route::post('/patients/{patient}/refer', [DoctorReferralController::class, 'store'])->name('referrals.store');
+        Route::get('/referrals/{referral}', [DoctorReferralController::class, 'show'])->name('referrals.show');
+        Route::patch('/referrals/{referral}/status', [DoctorReferralController::class, 'updateStatus'])->name('referrals.status');
     });
 
     // ==========================================

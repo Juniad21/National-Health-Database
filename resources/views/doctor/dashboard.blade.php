@@ -209,6 +209,29 @@
                 </div>
             @endif
         </div>
+
+        <!-- REFERRALS WIDGET -->
+        <div class="bg-slate-900 rounded-2xl shadow-xl shadow-slate-900/20 p-6 text-white">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-sm font-black uppercase tracking-widest text-slate-400">Clinical Referrals</h3>
+                <a href="{{ route('doctor.referrals.index') }}" class="text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest">View All</a>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-slate-800 rounded-xl">
+                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wide">Incoming</span>
+                    <span class="px-2.5 py-0.5 bg-teal-500/10 text-teal-400 rounded-lg text-xs font-black">{{ $referralStats['received'] }}</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-slate-800 rounded-xl">
+                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wide">Sent (Pending)</span>
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-black">{{ $referralStats['sent_pending'] }}</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-rose-500/10 rounded-xl border border-rose-500/20">
+                    <span class="text-xs font-bold text-rose-300 uppercase tracking-wide">Urgent Alerts</span>
+                    <span class="px-2.5 py-0.5 bg-rose-500 text-white rounded-lg text-[10px] font-black animate-pulse">{{ $referralStats['urgent'] }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>

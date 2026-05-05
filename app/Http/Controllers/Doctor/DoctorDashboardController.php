@@ -34,6 +34,14 @@ class DoctorDashboardController extends Controller
                 ->orWhere('phone', 'like', "%{$search}%")
                 ->get();
         }
+
+        // Referral Statistics
+        $userId = Auth::id();
+        $referralStats = [
+            'sent_pending' => \App\Models\PatientReferral::where('referred_by_doctor_id', $userId)->where('status', 'pending')->count(),
+            'received' => \App\Models\PatientReferral::where('referred_to_doctor_id', $userId)->where('status', 'pending')->count(),
+            'urgent' => \App\Models\PatientReferral::where('referred_to_doctor_id', $userId)->where('status', 'pending')->where('priority', 'emergency')->count(),
+        ];
         
         return view('doctor.dashboard', [
             'waitingQueue' => $waitingQueue,
@@ -41,6 +49,7 @@ class DoctorDashboardController extends Controller
             'search' => $search,
             'patientResults' => $patientResults,
             'doctor' => $doctor,
+            'referralStats' => $referralStats,
         ]);
     }
 
