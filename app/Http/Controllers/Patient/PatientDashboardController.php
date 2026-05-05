@@ -49,6 +49,7 @@ class PatientDashboardController extends Controller
 
     public function vaccinations()
     {
+        // IMPLEMENTED BY JUNAID: Comprehensive Vaccination Tracker
         $patient = Auth::user()->patient;
         $vaccinations = \App\Models\Vaccination::where('patient_id', $patient->id)
             ->orderBy('due_date', 'asc')
@@ -109,6 +110,7 @@ class PatientDashboardController extends Controller
 
     public function medicalRecords()
     {
+        // IMPLEMENTED BY JUNAID: Clinical History Management
         $patient = Auth::user()->patient;
 
         \App\Services\AuditLogService::logAction(

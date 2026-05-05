@@ -53,6 +53,7 @@ class HospitalDashboardController extends Controller
 
     public function completeLabOrder(Request $request, $id)
     {
+        // IMPLEMENTED BY JUNAID: Diagnostic Management Workflow
         $labOrder = \App\Models\LabOrder::findOrFail($id);
         $hospital = Auth::user()->hospital;
 
@@ -76,6 +77,7 @@ class HospitalDashboardController extends Controller
 
     public function updateResource(Request $request, $id)
     {
+        // IMPLEMENTED BY JUNAID: Capacity monitor update logic
         $resource = \App\Models\HospitalResource::findOrFail($id);
         $hospital = Auth::user()->hospital;
 

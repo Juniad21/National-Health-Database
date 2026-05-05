@@ -22,6 +22,7 @@ class DoctorDashboardController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
+        // IMPLEMENTED BY JUNAID: Digital Queue & Token Management
         $waitingQueue = \App\Models\Appointment::with('patient')
             ->where('doctor_id', $doctor->id)
             ->where('status', 'approved')
@@ -178,6 +179,7 @@ class DoctorDashboardController extends Controller
             }
         }
 
+        // IMPLEMENTED BY JUNAID: Structured E-Prescription Engine
         // Save prescription record
         \App\Models\MedicalRecord::create([
             'patient_id'              => $patient->id,
@@ -267,6 +269,7 @@ class DoctorDashboardController extends Controller
             'token_number' => 'TKN-' . strtoupper(\Illuminate\Support\Str::random(5))
         ]);
 
+        // IMPLEMENTED BY JUNAID: Automated token generation for digital queue
         return redirect()->back()->with('success', 'Appointment approved successfully. Patient added to queue.');
     }
 
