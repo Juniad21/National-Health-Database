@@ -116,7 +116,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <template x-for="doc in filteredDoctors" :key="doc.id">
                     <div @click="selectDoctor(doc)" 
                         class="bg-white p-6 rounded-[2rem] border border-slate-100 hover:border-teal-500 hover:shadow-2xl hover:shadow-teal-900/5 transition-all cursor-pointer group relative overflow-hidden">
