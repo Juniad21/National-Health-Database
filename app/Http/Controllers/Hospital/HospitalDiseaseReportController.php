@@ -35,7 +35,7 @@ class HospitalDiseaseReportController extends Controller
             'recovered_cases' => 'required|integer|min:0',
             'death_cases' => 'required|integer|min:0',
             'notes' => 'nullable|string',
-            'report_date' => 'required|date',
+            'report_date' => 'required|date|before_or_equal:today',
         ]);
 
         $hospital = Auth::user()->hospital;
