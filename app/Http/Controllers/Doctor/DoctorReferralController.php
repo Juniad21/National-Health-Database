@@ -45,8 +45,10 @@ class DoctorReferralController extends Controller
         $patientModel = Patient::findOrFail($patientId);
         $patientUser = $patientModel->user;
         
-        // Load potential recipients
-        $doctors = Doctor::with(['user', 'hospital'])->get();
+        // Load potential recipients (excluding the current doctor)
+        $doctors = Doctor::with(['user', 'hospital'])
+            ->where('user_id', '!=', Auth::id())
+            ->get();
         $hospitals = Hospital::with('user')->get();
         
         return view('doctor.referrals.create', compact('patientUser', 'doctors', 'hospitals'));
