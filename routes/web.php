@@ -188,8 +188,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Public Doctor Profiles
     Route::get('/doctor-profile/{id}', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'publicShow'])->name('doctor.public_profile');
 
-    // Internal Matching API
-    Route::get('/api/blood-bank/matches', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'getMatches'])->middleware('role:govt_admin');
+
 });
 
 // 4. Standard Profile Routes
