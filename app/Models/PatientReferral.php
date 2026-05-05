@@ -24,34 +24,36 @@ class PatientReferral extends Model
     ];
 
     /**
-     * Relationship with the Patient (User record).
+     * Relationship to the Patient profile.
      */
     public function patient()
     {
-        return $this->belongsTo(User::class, 'patient_id');
+        // Linking to Patient model via the user_id (stored in patient_id column)
+        return $this->belongsTo(Patient::class, 'patient_id', 'user_id');
     }
 
     /**
-     * Relationship with the Referring Doctor (User record).
+     * Relationship to the referring Doctor profile.
      */
     public function referredByDoctor()
     {
-        return $this->belongsTo(User::class, 'referred_by_doctor_id');
+        // Linking to Doctor model via the user_id (stored in referred_by_doctor_id column)
+        return $this->belongsTo(Doctor::class, 'referred_by_doctor_id', 'user_id');
     }
 
     /**
-     * Relationship with the Assigned Doctor (User record).
+     * Relationship to the destination Doctor profile.
      */
     public function referredToDoctor()
     {
-        return $this->belongsTo(User::class, 'referred_to_doctor_id');
+        return $this->belongsTo(Doctor::class, 'referred_to_doctor_id', 'user_id');
     }
 
     /**
-     * Relationship with the Assigned Hospital (User record).
+     * Relationship to the destination Hospital profile.
      */
     public function referredToHospital()
     {
-        return $this->belongsTo(User::class, 'referred_to_hospital_id');
+        return $this->belongsTo(Hospital::class, 'referred_to_hospital_id', 'user_id');
     }
 }
