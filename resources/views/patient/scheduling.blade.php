@@ -68,7 +68,7 @@
             document.getElementById('booking-section').scrollIntoView({ behavior: 'smooth' });
         }
     }
-}" class="space-y-8">
+}" x-cloak class="space-y-8">
 
     <!-- Global Search & Filters -->
     <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-50">
@@ -243,7 +243,7 @@
         <!-- Right Column: Booking -->
         <div class="lg:col-span-1" id="booking-section">
             
-            <div x-show="showBookingForm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" 
+            <div x-show="showBookingForm" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" 
                 class="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-slate-900/40 sticky top-8">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
                 
