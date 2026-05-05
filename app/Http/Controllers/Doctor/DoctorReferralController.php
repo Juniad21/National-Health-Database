@@ -132,20 +132,30 @@ class DoctorReferralController extends Controller
         ]);
 
         // Auto-create appointment if accepted
-        if ($request->status === 'accepted' && $referral->referred_to_doctor_id) {
-            $doctorProfile = \App\Models\Doctor::where('user_id', $referral->referred_to_doctor_id)->first();
-            $patientProfile = \App\Models\Patient::where('user_id', $referral->patient_id)->first();
-            
+        if ($request->status === 'accepted') {
+            // Use relationships to get the profile IDs correctly
+            $doctorProfile = $referral->referredToDoctor;
+            $patientProfile = $referral->patient;
+
             if ($doctorProfile && $patientProfile) {
-                \App\Models\Appointment::create([
-                    'patient_id' => $patientProfile->id,
-                    'doctor_id' => $doctorProfile->id,
-                    'hospital_id' => $doctorProfile->hospital_id,
-                    'date' => now()->addDay()->format('Y-m-d'), // Default to tomorrow
-                    'time_slot' => '10:00 AM - 11:00 AM', // Placeholder slot
-                    'status' => 'pending',
-                    'booking_id' => 'BK-REF-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
-                ]);
+                // Prevent duplicate appointments for the same referral
+                $exists = \App\Models\Appointment::where('patient_id', $patientProfile->id)
+                    ->where('doctor_id', $doctorProfile->id)
+                    ->where('status', 'pending')
+                    ->where('date', '>=', now()->toDateString())
+                    ->exists();
+
+                if (!$exists) {
+                    \App\Models\Appointment::create([
+                        'patient_id' => $patientProfile->id,
+                        'doctor_id' => $doctorProfile->id,
+                        'hospital_id' => $doctorProfile->hospital_id,
+                        'date' => now()->addDay()->format('Y-m-d'), // Default to tomorrow
+                        'time_slot' => '10:00 AM - 11:00 AM', // Placeholder slot
+                        'status' => 'pending',
+                        'booking_id' => 'BK-REF-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                    ]);
+                }
             }
         }
 
