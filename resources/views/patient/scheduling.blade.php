@@ -169,7 +169,11 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                                 <span class="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]" x-text="doc.hospital"></span>
                             </div>
-                            <span class="text-[10px] font-black text-teal-600 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Book Now →</span>
+                            <div class="flex items-center gap-4">
+                                <a :href="'/doctor-profile/' + doc.id" @click.stop 
+                                    class="text-[10px] font-black text-slate-400 hover:text-teal-600 uppercase tracking-widest transition-colors">View Profile</a>
+                                <span class="text-[10px] font-black text-teal-600 uppercase tracking-widest group-hover:translate-x-1 transition-transform">Book Now →</span>
+                            </div>
                         </div>
                     </div>
                 </template>
