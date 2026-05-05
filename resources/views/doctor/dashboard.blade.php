@@ -112,7 +112,7 @@
                                 </div>
                             </div>
                             <div class="flex gap-2 flex-shrink-0">
-                                <a href="{{ route('doctor.patient.view', $appointment->patient_id) }}"
+                                <a href="{{ route('doctor.patient.view', ['id' => $appointment->patient_id, 'tab' => 'full_profile']) }}"
                                     class="px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors">
                                     View Profile
                                 </a>
@@ -182,7 +182,7 @@
                                         <p class="text-xs text-gray-400">NID: {{ $res->nid }} &bull; Phone: {{ $res->phone }}</p>
                                     </div>
                                     @if($hasAccess)
-                                        <a href="{{ route('doctor.patient.view', $res->id) }}"
+                                        <a href="{{ route('doctor.patient.view', ['id' => $res->id, 'tab' => 'full_profile']) }}"
                                             class="text-center w-full py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 text-sm font-semibold transition-colors">
                                             View Profile & History
                                         </a>

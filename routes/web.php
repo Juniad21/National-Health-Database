@@ -58,7 +58,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/appointment/{appointment}/review', [PatientDashboardController::class, 'submitReview'])->name('submit_review');
 
         // Profile Management
-        Route::get('/profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'edit'])->name('profile.edit');
+        Route::get('/profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'show'])->name('profile.show');
+        Route::get('/profile/edit', [\App\Http\Controllers\Patient\PatientProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'update'])->name('profile.update');
 
         // Health Analytics

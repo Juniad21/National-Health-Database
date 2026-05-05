@@ -48,7 +48,7 @@
         </div>
 
         <!-- Consultation & Record Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative" x-data="{ activeTab: 'live_consultation' }">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative" x-data="{ activeTab: '{{ request()->query('tab', 'live_consultation') }}' }">
             {{-- FIXED BY JUNAID: Security Layer - Access Control Overlay --}}
             @if(!$hasConsent)
                 <div class="absolute inset-0 z-50 bg-white/60 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center">
@@ -230,6 +230,86 @@
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <!-- FULL PROFILE TAB -->
+                <div x-show="activeTab === 'full_profile'" x-cloak class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Personal & Contact -->
+                        <div class="space-y-6">
+                            <h4 class="text-sm font-black text-blue-600 uppercase tracking-widest border-b border-blue-100 pb-2">Personal & Contact</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-[10px] font-black text-gray-400 uppercase">Blood Group</p>
+                                    <p class="font-bold text-gray-800">{{ $patient->blood_group ?? 'N/A' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-gray-400 uppercase">NID</p>
+                                    <p class="font-bold text-gray-800">{{ $patient->nid }}</p>
+                                </div>
+                                <div class="col-span-2">
+                                    <p class="text-[10px] font-black text-gray-400 uppercase">Address</p>
+                                    <p class="font-bold text-gray-800">{{ $patient->address ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Insurance -->
+                        <div class="space-y-6">
+                            <h4 class="text-sm font-black text-blue-600 uppercase tracking-widest border-b border-blue-100 pb-2">Insurance Details</h4>
+                            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                                <p class="text-[10px] font-black text-blue-400 uppercase">Provider</p>
+                                <p class="font-black text-blue-800">{{ $patient->insurance_provider ?? 'No Insurance Policy Linked' }}</p>
+                                <p class="text-[10px] font-black text-blue-400 uppercase mt-2">Policy Number</p>
+                                <p class="font-mono font-bold text-blue-700">{{ $patient->insurance_policy_number ?? 'N/A' }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Medical Conditions -->
+                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                                <p class="text-[10px] font-black text-rose-600 uppercase tracking-tighter mb-1">Allergies</p>
+                                <p class="font-bold text-rose-900 text-xs">{{ $patient->allergies ?? 'None Reported' }}</p>
+                            </div>
+                            <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                                <p class="text-[10px] font-black text-amber-600 uppercase tracking-tighter mb-1">Chronic Conditions</p>
+                                <p class="font-bold text-amber-900 text-xs">{{ $patient->medical_conditions ?? 'None Reported' }}</p>
+                            </div>
+                            <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                                <p class="text-[10px] font-black text-indigo-600 uppercase tracking-tighter mb-1">Current Medications</p>
+                                <p class="font-bold text-indigo-900 text-xs">{{ $patient->current_medications ?? 'None' }}</p>
+                            </div>
+                        </div>
+
+                        <!-- History -->
+                        <div class="space-y-4">
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Past Surgeries</h4>
+                            <p class="text-sm text-gray-700 font-medium bg-gray-50 p-4 rounded-xl">{{ $patient->past_surgeries ?? 'No surgical history.' }}</p>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Family History</h4>
+                            <p class="text-sm text-gray-700 font-medium bg-gray-50 p-4 rounded-xl">{{ $patient->family_history ?? 'No family history provided.' }}</p>
+                        </div>
+
+                        <!-- Lifestyle -->
+                        <div class="md:col-span-2 space-y-4">
+                            <h4 class="text-sm font-black text-teal-600 uppercase tracking-widest border-b border-teal-100 pb-2">Lifestyle & Habits</h4>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="text-center">
+                                    <p class="text-[10px] font-black text-gray-400 uppercase">Smoking</p>
+                                    <p class="font-bold text-gray-700 capitalize text-sm">{{ $patient->smoking_status ?? 'N/A' }}</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-[10px] font-black text-gray-400 uppercase">Alcohol</p>
+                                    <p class="font-bold text-gray-700 capitalize text-sm">{{ $patient->alcohol_status ?? 'N/A' }}</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-[10px] font-black text-gray-400 uppercase">Activity</p>
+                                    <p class="font-bold text-gray-700 capitalize text-sm">{{ str_replace('_', ' ', $patient->activity_level) ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
