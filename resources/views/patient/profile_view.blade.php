@@ -1,6 +1,6 @@
 @extends('layouts.patient')
 
-@section('header_title', 'My Profile')
+@section('header_title', 'Profile')
 
 @section('content')
 <div class="max-w-5xl mx-auto space-y-8">

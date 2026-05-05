@@ -1,6 +1,6 @@
 @extends('layouts.doctor')
 
-@section('header_title', 'Professional Profile')
+@section('header_title', 'Profile')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-8">

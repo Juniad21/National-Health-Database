@@ -10,6 +10,15 @@ use Illuminate\Support\Facades\Auth;
 class PatientProfileController extends Controller
 {
     /**
+     * Display the patient profile.
+     */
+    public function show()
+    {
+        $patient = Auth::user()->patient;
+        return view('patient.profile_view', compact('patient'));
+    }
+
+    /**
      * Show the profile edit form.
      */
     public function edit()
@@ -52,7 +61,7 @@ class PatientProfileController extends Controller
         $patient = Auth::user()->patient;
         $patient->update($validated);
 
-        return redirect()->route('patient.profile.edit')->with('success', 'Profile updated successfully!');
+        return redirect()->route('patient.profile.show')->with('success', 'Profile updated successfully!');
     }
 
     /**
