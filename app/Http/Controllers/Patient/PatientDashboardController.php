@@ -201,6 +201,7 @@ class PatientDashboardController extends Controller
 
     public function consents()
     {
+        // IMPLEMENTED BY JUNAID: Compliance dashboard for data access control
         $patient = Auth::user()->patient;
         $accessRequests = \App\Models\AccessRequest::where('patient_id', $patient->id)
             ->with('doctor')
@@ -213,6 +214,7 @@ class PatientDashboardController extends Controller
 
     public function updateConsent(Request $request)
     {
+        // IMPLEMENTED BY JUNAID: Real-time consent status management
         $validated = $request->validate([
             'consent_id' => 'required|exists:access_requests,id',
             'status' => 'required|in:approved,rejected',

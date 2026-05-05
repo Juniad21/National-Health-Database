@@ -54,16 +54,28 @@ class DoctorDashboardController extends Controller
 
     public function viewPatient($id)
     {
+        // FIXED BY JUNAID: Implement strict data access control
+        // Doctors must have an approved AccessRequest to view full medical history
         $patient = \App\Models\Patient::findOrFail($id);
         $doctor = Auth::user()->doctor;
 
-        $medicalRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
-            ->with('doctor')
-            ->orderBy('date', 'desc')
-            ->get();
+        $hasConsent = \App\Models\AccessRequest::where('patient_id', $patient->id)
+            ->where('doctor_id', $doctor->id)
+            ->where('status', 'approved')
+            ->exists();
 
-        // Group records by type for display 
-        $records = $medicalRecords->groupBy('record_type');
+        $medicalRecords = collect();
+        $records = collect();
+        
+        if ($hasConsent) {
+            $medicalRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
+                ->with('doctor')
+                ->orderBy('date', 'desc')
+                ->get();
+
+            // Group records by type for display 
+            $records = $medicalRecords->groupBy('record_type');
+        }
 
         // Fetch lab tests for the consultation form
         $labTests = \App\Models\LabTestCatalog::orderBy('test_name', 'asc')->get();
@@ -72,6 +84,11 @@ class DoctorDashboardController extends Controller
             'patient' => $patient,
             'records' => $records,
             'labTests' => $labTests,
+            'hasConsent' => $hasConsent,
+            'pendingRequest' => \App\Models\AccessRequest::where('patient_id', $patient->id)
+                ->where('doctor_id', $doctor->id)
+                ->where('status', 'pending')
+                ->exists()
         ]);
     }
 
@@ -91,8 +108,19 @@ class DoctorDashboardController extends Controller
 
     public function consultation($patient_id)
     {
+        // FIXED BY JUNAID: Security check for consultation access
         $patient = \App\Models\Patient::findOrFail($patient_id);
         $doctor = Auth::user()->doctor;
+
+        $hasConsent = \App\Models\AccessRequest::where('patient_id', $patient->id)
+            ->where('doctor_id', $doctor->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$hasConsent) {
+            return redirect()->route('doctor.patient.view', $patient_id)
+                ->with('error', 'You must have patient consent to start a consultation and view medical history.');
+        }
 
         $medicalRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
             ->orderBy('date', 'desc')

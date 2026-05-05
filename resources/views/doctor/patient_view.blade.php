@@ -48,7 +48,34 @@
         </div>
 
         <!-- Consultation & Record Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" x-data="{ activeTab: 'live_consultation' }">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative" x-data="{ activeTab: 'live_consultation' }">
+            {{-- FIXED BY JUNAID: Security Layer - Access Control Overlay --}}
+            @if(!$hasConsent)
+                <div class="absolute inset-0 z-50 bg-white/60 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center">
+                    <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-rose-100">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-800 mb-2">Patient Consent Required</h3>
+                    <p class="text-gray-500 max-w-md mb-8 font-medium">To protect patient privacy, you must request and receive explicit consent before viewing medical history or starting a consultation.</p>
+                    
+                    @if($pendingRequest)
+                        <button disabled class="bg-gray-100 text-gray-500 px-8 py-4 rounded-2xl font-black flex items-center gap-3 cursor-not-allowed">
+                            <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Waiting for Approval...
+                        </button>
+                    @else
+                        <form action="{{ route('doctor.patient.request_access', $patient->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="bg-rose-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl shadow-rose-200 hover:bg-rose-700 transition-all transform hover:-translate-y-1">
+                                Request Access Now
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            @endif
+
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center">
                 <h3 class="font-black text-gray-800 text-lg">Medical Actions</h3>
                 <div class="flex bg-gray-200/50 p-1 rounded-xl">
@@ -208,41 +235,48 @@
         </div>
 
         <!-- Medical History Timeline -->
-        <h3 class="font-black text-gray-800 text-lg mt-10 mb-4">Patient Medical History</h3>
+        <div class="relative">
+            {{-- FIXED BY JUNAID: Blur history if no consent --}}
+            @if(!$hasConsent)
+                <div class="absolute inset-0 z-10 bg-white/40 backdrop-blur-[2px] rounded-3xl"></div>
+            @endif
+            
+            <h3 class="font-black text-gray-800 text-lg mt-10 mb-4">Patient Medical History</h3>
 
-        @if($records->isEmpty())
-            <div class="text-center py-12 bg-white rounded-3xl border border-gray-200 border-dashed">
-                <p class="text-gray-400 font-medium">No prior records found for this patient.</p>
-            </div>
-        @else
-            <div class="space-y-6">
-                @foreach($records as $type => $group)
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/20">
-                            <h4 class="font-black text-gray-700 uppercase tracking-widest text-xs">
-                                {{ $type === 'prescription' ? 'Prescriptions' : ($type === 'lab' ? 'Lab Reports' : str_replace('_', ' ', $type)) }}
-                            </h4>
-                        </div>
-                        <div class="divide-y divide-gray-50">
-                            @foreach($group as $record)
-                                <div class="p-6 hover:bg-gray-50/50 transition-colors">
-                                    <div class="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h5 class="font-bold text-gray-800 text-lg">{{ $record->diagnosis }}</h5>
-                                            <p class="text-xs text-gray-400 font-medium mt-1">Recorded by Dr. {{ $record->doctor->first_name }} {{ $record->doctor->last_name }}</p>
+            @if($records->isEmpty())
+                <div class="text-center py-12 bg-white rounded-3xl border border-gray-200 border-dashed">
+                    <p class="text-gray-400 font-medium">No prior records found for this patient.</p>
+                </div>
+            @else
+                <div class="space-y-6">
+                    @foreach($records as $type => $group)
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/20">
+                                <h4 class="font-black text-gray-700 uppercase tracking-widest text-xs">
+                                    {{ $type === 'prescription' ? 'Prescriptions' : ($type === 'lab' ? 'Lab Reports' : str_replace('_', ' ', $type)) }}
+                                </h4>
+                            </div>
+                            <div class="divide-y divide-gray-50">
+                                @foreach($group as $record)
+                                    <div class="p-6 hover:bg-gray-50/50 transition-colors">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h5 class="font-bold text-gray-800 text-lg">{{ $record->diagnosis }}</h5>
+                                                <p class="text-xs text-gray-400 font-medium mt-1">Recorded by Dr. {{ $record->doctor->first_name }} {{ $record->doctor->last_name }}</p>
+                                            </div>
+                                            <span class="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded-md">{{ \Carbon\Carbon::parse($record->date)->format('M d, Y') }}</span>
                                         </div>
-                                        <span class="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded-md">{{ \Carbon\Carbon::parse($record->date)->format('M d, Y') }}</span>
+                                        <div class="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 border border-gray-100 whitespace-pre-line font-medium leading-relaxed">
+                                            {!! nl2br(e($record->medications_or_results)) !!}
+                                        </div>
                                     </div>
-                                    <div class="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 border border-gray-100 whitespace-pre-line font-medium leading-relaxed">
-                                        {!! nl2br(e($record->medications_or_results)) !!}
-                                    </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </div>
 
     <style>
