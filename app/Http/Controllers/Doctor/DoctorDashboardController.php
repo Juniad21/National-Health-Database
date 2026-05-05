@@ -68,6 +68,16 @@ class DoctorDashboardController extends Controller
         $records = collect();
         
         if ($hasConsent) {
+            // FIXED BY JUNAID: Log data access for compliance audit trail
+            \App\Services\AuditLogService::logAction(
+                action: 'patient history accessed',
+                description: "Dr. {$doctor->first_name} accessed the full medical history of Patient #{$patient->id} via granted consent.",
+                module: 'security',
+                severity: 'high',
+                targetType: \App\Models\Patient::class,
+                targetId: $patient->id
+            );
+
             $medicalRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
                 ->with('doctor')
                 ->orderBy('date', 'desc')
@@ -121,6 +131,16 @@ class DoctorDashboardController extends Controller
             return redirect()->route('doctor.patient.view', $patient_id)
                 ->with('error', 'You must have patient consent to start a consultation and view medical history.');
         }
+
+        // FIXED BY JUNAID: Audit log for consultation start
+        \App\Services\AuditLogService::logAction(
+            action: 'consultation started',
+            description: "Dr. {$doctor->first_name} initiated a live consultation session with Patient #{$patient->id}.",
+            module: 'consultation',
+            severity: 'medium',
+            targetType: \App\Models\Patient::class,
+            targetId: $patient->id
+        );
 
         $medicalRecords = \App\Models\MedicalRecord::where('patient_id', $patient->id)
             ->orderBy('date', 'desc')
