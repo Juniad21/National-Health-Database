@@ -125,9 +125,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Hospital Billing & Claims
         Route::get('/billing', [HospitalBillingController::class, 'index'])->name('billing.index');
+        Route::get('/billing/claims', [HospitalBillingController::class, 'claims'])->name('billing.claims');
         Route::get('/billing/create', [HospitalBillingController::class, 'create'])->name('billing.create');
         Route::post('/billing', [HospitalBillingController::class, 'store'])->name('billing.store');
         Route::post('/billing/{id}/payment', [HospitalBillingController::class, 'updatePayment'])->name('billing.payment.update');
+        Route::post('/billing/{bill_id}/claim', [HospitalBillingController::class, 'submitClaim'])->name('billing.claim.submit');
+        Route::post('/billing/claims/{id}/status', [HospitalBillingController::class, 'updateClaimStatus'])->name('billing.claim.status.update');
 
         // Disease Reporting
         Route::prefix('disease-reports')->name('disease_reports.')->group(function () {

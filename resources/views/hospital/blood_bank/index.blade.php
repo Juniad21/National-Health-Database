@@ -304,7 +304,7 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Required By</label>
-                            <input type="datetime-local" name="required_by" class="w-full rounded-2xl border-gray-100 bg-gray-50 text-sm font-black focus:ring-red-500 py-3">
+                            <input type="datetime-local" name="required_by" min="{{ now()->format('Y-m-d\TH:i') }}" class="w-full rounded-2xl border-gray-100 bg-gray-50 text-sm font-black focus:ring-red-500 py-3">
                         </div>
                     </div>
                     <div>
