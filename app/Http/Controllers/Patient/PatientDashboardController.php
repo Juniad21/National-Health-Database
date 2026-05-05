@@ -9,15 +9,7 @@ use Illuminate\Support\Str;
 
 class PatientDashboardController extends Controller
 {
-    protected array $symptomSpecialties = [
-        'Neurology' => ['headache', 'migraine', 'dizzy'],
-        'General Medicine' => ['fever', 'cough', 'cold', 'flu'],
-        'Orthopedics' => ['leg pain', 'arm pain', 'bone', 'joint'],
-        'Cardiology' => ['chest pain', 'heart', 'breath'],
-        'Gastroenterology' => ['stomach', 'digestion', 'vomit'],
-        'Endocrinology' => ['diabetes', 'sugar', 'thyroid'],
-        'Dermatology' => ['skin', 'rash', 'itch'],
-    ];
+
 
     public function index()
     {
@@ -250,35 +242,78 @@ class PatientDashboardController extends Controller
     public function symptomAssessment(Request $request)
     {
         $patient = Auth::user()->patient;
-        $suggestedSpecialty = null;
+        
+        $symptomsList = [
+            'Common' => ['Fever', 'Cough', 'Fatigue', 'Body Ache', 'Chills'],
+            'Neurological' => ['Severe Headache', 'Dizziness', 'Numbness', 'Confusion', 'Seizures'],
+            'Respiratory' => ['Shortness of Breath', 'Wheezing', 'Chest Tightness', 'Sore Throat'],
+            'Digestive' => ['Nausea', 'Vomiting', 'Stomach Pain', 'Diarrhea', 'Loss of Appetite'],
+            'Dermatological' => ['Rash', 'Itching', 'Skin Redness', 'Blisters'],
+            'Cardiovascular' => ['Palpitations', 'Chest Pain', 'Swollen Feet'],
+        ];
+
+        $specialtyMapping = [
+            'Neurological' => 'Neurology',
+            'Respiratory' => 'Pulmonology',
+            'Digestive' => 'Gastroenterology',
+            'Dermatological' => 'Dermatology',
+            'Cardiovascular' => 'Cardiology',
+            'Common' => 'General Medicine',
+        ];
 
         if ($request->isMethod('post')) {
             $validated = $request->validate([
-                'description' => 'required|string',
-                'severity' => 'required|in:mild,moderate,severe',
+                'symptoms' => 'required|array',
+                'severity' => 'required|string',
+                'duration' => 'required|string',
+                'notes' => 'nullable|string',
             ]);
 
-            $description = strtolower($validated['description']);
-
-            foreach ($this->symptomSpecialties as $specialty => $keywords) {
-                foreach ($keywords as $keyword) {
-                    if (str_contains($description, $keyword)) {
-                        $suggestedSpecialty = $specialty;
-                        break 2;
+            // Simple Logic: Find the most frequent category
+            $categories = [];
+            foreach ($validated['symptoms'] as $symptom) {
+                foreach ($symptomsList as $category => $list) {
+                    if (in_array($symptom, $list)) {
+                        $categories[] = $category;
                     }
                 }
             }
 
-            if (! $suggestedSpecialty) {
-                $suggestedSpecialty = 'General Medicine';
-            }
+            $mostFrequentCategory = !empty($categories) 
+                ? array_search(max(array_count_values($categories)), array_count_values($categories))
+                : 'Common';
 
-            return view('patient.symptoms', [
-                'suggestedSpecialty' => $suggestedSpecialty,
-            ])->with('success', 'Symptom assessment submitted!');
+            $suggestedSpecialty = $specialtyMapping[$mostFrequentCategory] ?? 'General Medicine';
+
+            // Generate "Analysis Results" (Simulated)
+            $results = [
+                'primary_concern' => $mostFrequentCategory,
+                'confidence' => count($categories) > 0 ? min(95, 40 + (count($categories) * 10)) : 50,
+                'recommendation' => "Based on your reported symptoms ({$validated['severity']}), you should consult a {$suggestedSpecialty} specialist."
+            ];
+
+            $assessment = \App\Models\SymptomAssessment::create([
+                'patient_id' => $patient->id,
+                'selected_symptoms' => $validated['symptoms'],
+                'additional_notes' => $validated['notes'],
+                'severity' => $validated['severity'],
+                'duration' => $validated['duration'],
+                'suggested_specialty' => $suggestedSpecialty,
+                'analysis_results' => $results,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'assessment' => $assessment
+            ]);
         }
 
-        return view('patient.symptoms');
+        $history = \App\Models\SymptomAssessment::where('patient_id', $patient->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('patient.symptoms', compact('symptomsList', 'history'));
     }
 
     public function approveAccessRequest($id)

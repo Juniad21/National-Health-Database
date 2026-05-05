@@ -88,4 +88,9 @@ class Patient extends Model
     {
         return $this->hasMany(BloodRequest::class);
     }
+
+    public function symptomAssessments()
+    {
+        return $this->hasMany(SymptomAssessment::class);
+    }
 }
