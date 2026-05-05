@@ -63,6 +63,34 @@ class BloodStock extends Model
         ][$this->status] ?? 'gray';
     }
 
+    public static function normalizeBloodGroup($group)
+    {
+        if (!$group) return null;
+        
+        $group = strtoupper(trim($group));
+        $group = str_replace([' POSITIVE', ' POS', '_POSITIVE', ' PLUS'], '+', $group);
+        $group = str_replace([' NEGATIVE', ' NEG', '_NEGATIVE', ' MINUS'], '-', $group);
+        $group = str_replace(' ', '+', $group); // Handle URL space issue
+        
+        // Final sanity check for common groups
+        $map = [
+            'AB+' => 'AB+', 'AB-' => 'AB-',
+            'A+' => 'A+', 'A-' => 'A-',
+            'B+' => 'B+', 'B-' => 'B-',
+            'O+' => 'O+', 'O-' => 'O-'
+        ];
+        
+        return $map[$group] ?? $group;
+    }
+
+    public static function normalizeDistrict($district)
+    {
+        if (!$district) return '';
+        $district = strtolower(trim($district));
+        $district = explode(',', $district)[0]; // "Dhaka, Bangladesh" -> "dhaka"
+        return trim($district);
+    }
+
     public function isRare()
     {
         return in_array($this->blood_group, self::getRareBloodGroups());

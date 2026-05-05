@@ -213,4 +213,68 @@ class NationalBloodBankController extends Controller
 
         return redirect()->back()->with('success', "Successfully transferred {$validated['transfer_units']} units of {$validated['blood_group']} to {$destinationHospital->name}.");
     }
+
+    public function getMatches(Request $request)
+    {
+        $rawGroup = $request->blood_group;
+        $normalizedGroup = BloodStock::normalizeBloodGroup($rawGroup);
+        $requestedUnits = (int) $request->input('requested_units', 1);
+        $rawDistrict = $request->district;
+        $normalizedDistrict = BloodStock::normalizeDistrict($rawDistrict);
+        $excludeHospitalId = $request->exclude_hospital_id;
+
+        $query = BloodStock::with('hospital')
+            ->where('available_units', '>', 0);
+
+        // Exact match on normalized group
+        $query->where('blood_group', $normalizedGroup);
+
+        if ($excludeHospitalId) {
+            $query->where('hospital_id', '!=', $excludeHospitalId);
+        }
+
+        $allStocks = $query->get();
+
+        $matches = $allStocks->map(function($stock) use ($normalizedDistrict, $requestedUnits) {
+            $stockNormalizedDistrict = BloodStock::normalizeDistrict($stock->district);
+            $isSameDistrict = ($stockNormalizedDistrict === $normalizedDistrict);
+            
+            $matchType = ($stock->available_units >= $requestedUnits) ? 'Full Match' : 'Partial Match';
+            $matchPriority = ($matchType === 'Full Match' ? 2 : 1);
+            
+            // Score for sorting: Same District (100) + Match Type (50) + Units Ratio
+            $score = ($isSameDistrict ? 100 : 0) + ($matchPriority * 50) + ($stock->available_units / 100);
+            
+            return [
+                'id' => $stock->id,
+                'hospital_id' => $stock->hospital_id,
+                'hospital_name' => $stock->hospital->name,
+                'district' => $stock->district,
+                'blood_group' => $stock->blood_group,
+                'available_units' => $stock->available_units,
+                'match_type' => $matchType,
+                'is_same_district' => $isSameDistrict,
+                'score' => $score
+            ];
+        })->sortByDesc('score')->values();
+
+        // Developer logging
+        \Illuminate\Support\Facades\Log::info("Blood Match Execution", [
+            'request_id' => $request->request_id,
+            'original_group' => $rawGroup,
+            'normalized_group' => $normalizedGroup,
+            'requested_units' => $requestedUnits,
+            'stocks_checked' => $allStocks->count(),
+            'matches_found' => $matches->count()
+        ]);
+
+        return response()->json([
+            'matches' => $matches,
+            'debug' => [
+                'normalized_group' => $normalizedGroup,
+                'normalized_district' => $normalizedDistrict,
+                'count' => $matches->count()
+            ]
+        ]);
+    }
 }

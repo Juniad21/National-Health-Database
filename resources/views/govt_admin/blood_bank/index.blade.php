@@ -7,7 +7,29 @@
     showTransferModal: false, 
     selectedSourceStock: null, 
     showNoteModal: false,
-    selectedRequest: null
+    showMatchModal: false,
+    selectedRequest: null,
+    matchingHospitals: [],
+    isLoadingMatches: false,
+    async fetchMatches(requestId, bloodGroup, district, requestingHospitalId, requestedUnits) {
+        this.isLoadingMatches = true;
+        this.matchingHospitals = [];
+        console.log('Fetching matches for:', { requestId, bloodGroup, district, requestingHospitalId, requestedUnits });
+        
+        try {
+            const url = `/api/blood-bank/matches?blood_group=${encodeURIComponent(bloodGroup)}&district=${encodeURIComponent(district)}&exclude_hospital_id=${requestingHospitalId}&requested_units=${requestedUnits}&request_id=${requestId}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            console.log('Match data received:', data);
+            this.matchingHospitals = data.matches || [];
+        } catch (error) {
+            console.error('Error fetching matches:', error);
+            this.matchingHospitals = [];
+        } finally {
+            this.isLoadingMatches = false;
+        }
+    }
 }">
     
     <!-- Summary Stats -->
@@ -158,11 +180,9 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1">
                                         @if(in_array($req->status, ['Pending', 'Under Review']))
-                                        <form action="{{ route('govt_admin.blood_bank.request.status', $req->id) }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="status" value="Under Review">
-                                            <button type="submit" class="px-3 py-1 bg-yellow-50 text-yellow-600 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-yellow-100 transition-all">Review</button>
-                                        </form>
+                                        <button @click="selectedRequest = {{ json_encode($req) }}; matchingHospitals = []; showMatchModal = true; fetchMatches({{ $req->id }}, '{{ $req->blood_group }}', '{{ $req->district }}', {{ $req->requesting_hospital_id }}, {{ $req->requested_units }})" class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100">
+                                            Match
+                                        </button>
                                         @endif
                                         <button @click="selectedRequest = {{ json_encode($req) }}; showNoteModal = true" class="p-1.5 text-gray-400 hover:text-indigo-600 transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -284,6 +304,100 @@
                         <button type="submit" class="px-6 py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black hover:bg-emerald-700 transition-all uppercase tracking-widest shadow-lg shadow-emerald-100">Execute Transfer</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Modal -->
+    <div x-show="showMatchModal" class="fixed inset-0 z-[100] overflow-y-auto" style="display: none;" x-cloak>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showMatchModal" @click="showMatchModal = false" class="fixed inset-0 transition-opacity bg-gray-900/40 backdrop-blur-sm"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>&#8203;
+            <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full sm:p-8">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-black text-gray-800 uppercase tracking-tight leading-none mb-1">Strategic Allocation</h3>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Stock Matching Engine</p>
+                </div>
+
+                <div class="mb-8 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Matching Rule Engine</p>
+                    <p class="text-xs font-bold text-indigo-800 leading-relaxed">System is analyzing facilities with <span x-text="selectedRequest?.blood_group" class="font-black text-indigo-600"></span> availability, prioritized by proximity (District: <span x-text="selectedRequest?.district" class="font-black text-indigo-600"></span>) and stock depth.</p>
+                </div>
+
+                <div class="max-h-64 overflow-y-auto mb-6 pr-2 custom-scrollbar">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="sticky top-0 bg-white shadow-sm border-b border-gray-100">
+                                <th class="pb-3 text-[9px] font-black text-gray-400 uppercase tracking-widest">Hospital & District</th>
+                                <th class="pb-3 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Available</th>
+                                <th class="pb-3 text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Compatibility</th>
+                                <th class="pb-3 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            <!-- Loading Spinner -->
+                            <template x-if="isLoadingMatches">
+                                <tr>
+                                    <td colspan="4" class="py-12 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Searching National Registry...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template x-for="match in matchingHospitals" :key="match.id">
+                                <tr>
+                                    <td class="py-4">
+                                        <div class="flex flex-col">
+                                            <span class="text-xs font-black text-gray-800" x-text="match.hospital_name"></span>
+                                            <span class="text-[9px] font-bold text-gray-400 uppercase" x-text="match.district"></span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 text-center">
+                                        <span class="text-sm font-black text-emerald-600" x-text="match.available_units"></span>
+                                    </td>
+                                    <td class="py-4 text-center">
+                                        <span :class="match.match_type === 'Full Match' ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'" class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter" x-text="match.match_type">
+                                            Match Type
+                                        </span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <form :action="'/govt-admin/blood-bank/request/' + selectedRequest.id + '/match'" method="POST" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="matched_hospital_id" :value="match.hospital_id">
+                                            <input type="number" name="approved_units" :max="Math.min(selectedRequest.requested_units, match.available_units)" :value="Math.min(selectedRequest.requested_units, match.available_units)" min="1" class="w-16 rounded-lg border-gray-100 bg-gray-50 text-[10px] font-black py-1 px-2 focus:ring-indigo-500 mr-2">
+                                            <button type="submit" class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all">Match</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-if="matchingHospitals.length === 0 && !isLoadingMatches">
+                                <tr>
+                                    <td colspan="4" class="py-12 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-10 h-10 text-gray-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">No hospitals currently have available <span x-text="selectedRequest?.blood_group" class="text-red-500"></span> stock.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button @click="showMatchModal = false" class="px-6 py-3 bg-gray-50 text-gray-400 rounded-xl text-[10px] font-black hover:bg-gray-100 transition-all uppercase tracking-widest">Cancel</button>
+                    <form :action="'/govt-admin/blood-bank/request/' + selectedRequest.id + '/status'" method="POST" class="inline" x-show="selectedRequest">
+                        @csrf
+                        <input type="hidden" name="status" value="Rejected">
+                        <button type="submit" class="px-6 py-3 bg-red-50 text-red-600 rounded-xl text-[10px] font-black hover:bg-red-600 hover:text-white transition-all uppercase tracking-widest">Reject Request</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

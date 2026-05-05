@@ -1,4 +1,3 @@
-```php
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -120,10 +119,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/billing', [HospitalBillingController::class, 'store'])->name('billing.store');
         Route::post('/billing/{id}/payment', [HospitalBillingController::class, 'updatePayment'])->name('billing.payment.update');
 
-        Route::get('/billing/claims', [HospitalBillingController::class, 'claims'])->name('billing.claims');
-        Route::post('/billing/{bill_id}/claim', [HospitalBillingController::class, 'submitClaim'])->name('billing.claim.submit');
-        Route::post('/billing/claims/{id}/status', [HospitalBillingController::class, 'updateClaimStatus'])->name('billing.claim.status.update');
-
         // Disease Reporting
         Route::prefix('disease-reports')->name('disease_reports.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Hospital\HospitalDiseaseReportController::class, 'index'])->name('index');
@@ -193,6 +188,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Public Doctor Profiles
     Route::get('/doctor-profile/{id}', [\App\Http\Controllers\Doctor\DoctorProfileController::class, 'publicShow'])->name('doctor.public_profile');
 
+    // Internal Matching API
+    Route::get('/api/blood-bank/matches', [\App\Http\Controllers\Govt\NationalBloodBankController::class, 'getMatches'])->middleware('role:govt_admin');
 });
 
 // 4. Standard Profile Routes
@@ -203,4 +200,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
-
