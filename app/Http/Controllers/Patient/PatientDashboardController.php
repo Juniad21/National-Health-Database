@@ -68,15 +68,17 @@ class PatientDashboardController extends Controller
             ->orderBy('date', 'desc')
             ->get();
         
-        // Load doctors with their hospital and average rating from both reviews and evaluations if possible
-        // For simplicity, we stick to the 'reviews' relationship which is established
+        // Get all available doctors for scheduling, with hospital and user details, including average rating
         $doctors = \App\Models\Doctor::with(['hospital', 'user'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->orderBy('id', 'asc')
             ->get();
         
-        return view('patient.scheduling', compact('appointments', 'doctors'));
+        return view('patient.scheduling', [
+            'appointments' => $appointments,
+            'doctors' => $doctors,
+        ]);
     }
 
     public function storeAppointment(Request $request)
