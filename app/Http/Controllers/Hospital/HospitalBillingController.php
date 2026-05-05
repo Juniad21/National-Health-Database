@@ -194,11 +194,29 @@ class HospitalBillingController extends Controller
             'remarks' => 'nullable|string'
         ]);
 
+        $oldStatus = $claim->claim_status;
         $claim->update([
             'claim_status' => $validated['claim_status'],
             'approved_amount' => $validated['approved_amount'] ?? $claim->approved_amount,
             'remarks' => $validated['remarks'] ?? $claim->remarks,
         ]);
+
+        // Automatically update bill payment if claim is approved
+        if ($validated['claim_status'] === 'approved' && $oldStatus !== 'approved') {
+            $bill = $claim->bill;
+            if ($bill) {
+                $approvedAmount = $validated['approved_amount'] ?? 0;
+                $bill->paid_amount += $approvedAmount;
+                $bill->due_amount = max(0, $bill->total_amount - $bill->paid_amount);
+                
+                if ($bill->due_amount <= 0) {
+                    $bill->payment_status = 'paid';
+                } elseif ($bill->paid_amount > 0) {
+                    $bill->payment_status = 'partially_paid';
+                }
+                $bill->save();
+            }
+        }
 
         AuditLogService::logAction('insurance claim status updated', "Updated claim status to {$validated['claim_status']}", 'billing', 'medium', InsuranceClaim::class, $claim->id);
 
