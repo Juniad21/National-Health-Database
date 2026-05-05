@@ -128,6 +128,24 @@ class DoctorReferralController extends Controller
             'status' => $request->status,
         ]);
 
+        // Auto-create appointment if accepted
+        if ($request->status === 'accepted' && $referral->referred_to_doctor_id) {
+            $doctorProfile = \App\Models\Doctor::where('user_id', $referral->referred_to_doctor_id)->first();
+            $patientProfile = \App\Models\Patient::where('user_id', $referral->patient_id)->first();
+            
+            if ($doctorProfile && $patientProfile) {
+                \App\Models\Appointment::create([
+                    'patient_id' => $patientProfile->id,
+                    'doctor_id' => $doctorProfile->id,
+                    'hospital_id' => $doctorProfile->hospital_id,
+                    'date' => now()->addDay()->format('Y-m-d'), // Default to tomorrow
+                    'time_slot' => '10:00 AM - 11:00 AM', // Placeholder slot
+                    'status' => 'pending',
+                    'booking_id' => 'BK-REF-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+                ]);
+            }
+        }
+
         return redirect()->back()->with('success', 'Referral status updated to ' . $request->status);
     }
 }
