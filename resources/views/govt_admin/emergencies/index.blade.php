@@ -1,7 +1,11 @@
 @extends('layouts.govt_admin')
 
 @section('content')
-<div class="p-6">
+<div class="space-y-6" x-data="{ 
+    showDispatchModal: false, 
+    currentEmergencyId: null,
+    selectedHospitals: []
+}">
     <div class="flex items-center justify-between mb-8">
         <div>
             <h1 class="text-3xl font-bold text-gray-800">National Emergency Monitor</h1>
@@ -85,11 +89,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50" x-data="{ 
-                    showDispatchModal: false, 
-                    currentEmergencyId: null,
-                    selectedHospitals: []
-                }">
+                <tbody class="divide-y divide-gray-50">
                     @foreach($emergencies as $emergency)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 text-sm font-bold text-gray-800">#{{ $emergency->id }}</td>
