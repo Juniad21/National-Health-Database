@@ -135,10 +135,10 @@
                              {{ $emergency->created_at->diffInMinutes($emergency->accepted_at ?: now()) }} mins
                         </td>
                         <td class="px-6 py-4">
-                            @if($emergency->status === 'Pending Dispatch')
+                            @if($emergency->status === 'Pending Dispatch' || $emergency->status === 'Sent')
                                 <button @click="currentEmergencyId = {{ $emergency->id }}; showDispatchModal = true" 
                                     class="text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
-                                    Send Alert
+                                    {{ $emergency->status === 'Sent' ? 'Update Alert' : 'Send Alert' }}
                                 </button>
                             @else
                                 <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">No Action</span>
