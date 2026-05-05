@@ -34,6 +34,7 @@
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Report Date</label>
                         <input type="date" name="report_date" value="{{ old('report_date', date('Y-m-d')) }}" 
+                               max="{{ date('Y-m-d') }}"
                                class="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 @error('report_date') border-red-500 @enderror">
                         @error('report_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
