@@ -7,7 +7,6 @@ use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Hospital\HospitalDashboardController;
 use App\Http\Controllers\Hospital\HospitalAuditLogController;
 use App\Http\Controllers\Hospital\HospitalBillingController;
-use App\Http\Controllers\Admin\DuplicateRecordController;
 use App\Http\Controllers\Govt\GovtAdminDashboardController;
 
 // 1. Redirect Home to Login
@@ -126,11 +125,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/', [\App\Http\Controllers\Hospital\HospitalDiseaseReportController::class, 'store'])->name('store');
             Route::get('/{id}', [\App\Http\Controllers\Hospital\HospitalDiseaseReportController::class, 'show'])->name('show');
         });
-
-        // Duplicate Records
-        Route::get('/duplicates', [DuplicateRecordController::class, 'index'])->name('duplicates.index');
-        Route::get('/duplicates/compare/{id1}/{id2}', [DuplicateRecordController::class, 'compare'])->name('duplicates.compare');
-        Route::post('/duplicates/merge', [DuplicateRecordController::class, 'merge'])->name('duplicates.merge');
 
         // Ambulance Fleet
         Route::prefix('ambulance-fleet')->name('ambulance_fleet.')->group(function () {
