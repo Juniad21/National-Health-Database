@@ -68,6 +68,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Vaccination Tracking
         Route::get('/dashboard/vaccinations', [PatientDashboardController::class, 'vaccinations'])->name('vaccinations');
+        
+        // Referrals
+        Route::get('/referrals', [PatientDashboardController::class, 'referrals'])->name('referrals');
     });
 
     // ==========================================

@@ -480,4 +480,19 @@ class PatientDashboardController extends Controller
 
         return redirect()->back()->with('success', 'Thank you for your review!');
     }
+
+    /**
+     * Display the patient's referral history.
+     */
+    public function referrals()
+    {
+        $patientUser = Auth::user();
+        
+        $referrals = \App\Models\PatientReferral::where('patient_id', $patientUser->id)
+            ->with(['referredByDoctor', 'referredToDoctor', 'referredToHospital'])
+            ->latest()
+            ->get();
+            
+        return view('patient.referrals', compact('referrals'));
+    }
 }
