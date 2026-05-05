@@ -67,10 +67,13 @@ class DoctorReferralController extends Controller
             'department' => 'nullable|string|max:255',
         ]);
 
+        $referredToDoctor = \App\Models\Doctor::where('user_id', $request->referred_to_doctor_id)->first();
+
         PatientReferral::create([
             'patient_id' => $patientUserId,
             'referred_by_doctor_id' => Auth::id(),
             'referred_to_doctor_id' => $request->referred_to_doctor_id,
+            'referred_to_hospital_id' => $referredToDoctor->hospital->user_id ?? null,
             'referral_type' => 'specialist',
             'department' => $request->department,
             'priority' => 'normal',
